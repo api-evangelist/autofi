@@ -1,7 +1,29 @@
 aid: autofi
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source: []
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/autofi.png
 name: AutoFi
-description: AutoFi is a company surfaced as a portfolio company of 500-global and added to the API Evangelist
-  network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+description: >-
+  AutoFi ("The Sales Momentum Company") is an AI-powered automotive commerce
+  platform that connects online and in-store car-buying experiences for
+  dealerships, OEMs, lenders, and online marketplaces. Its products span digital
+  retailing (online financing exploration and personalized deal paths with real
+  payments and options), showroom solutions (in-store deal-structuring tools that
+  preserve dealership profitability and buyer transparency), and Smartlink lead
+  management (funneling customer responses into dealership workflows). AutoFi was
+  surfaced as a portfolio company of 500 Global and added to the API Evangelist
+  network. As of enrichment it exposes no public developer API, portal, or
+  documentation; this profile captures its public web and domain-security
+  posture.
 url: https://raw.githubusercontent.com/api-evangelist/autofi/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -11,9 +33,16 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-18'
 tags:
 - Company
+- Automotive
+- Fintech
+- Digital Retail
+- Auto Finance
+- Dealerships
+- Sales Enablement
+- SaaS
 apis: []
 maintainers:
 - FN: Kin Lane
@@ -23,3 +52,16 @@ maintainers:
 common:
 - type: Website
   url: https://autofi.com
+- type: Blog
+  url: https://www.autofi.com/news/
+- type: PrivacyPolicy
+  url: https://autofi.com/privacy-policy/
+- type: DomainSecurity
+  url: security/autofi-domain-security.yml
+- type: LLMsTxt
+  url: llms/autofi-llms.txt
+x-enrichment:
+  date: '2026-07-19'
+  status: backfilled
+  pass: local-v1
+  note: backfilled from .gitignore signal + verified work evidence
