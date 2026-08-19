@@ -1,0 +1,24 @@
+generated: '2026-08-14'
+method: searched
+source: https://www.autofi.com/
+plan_count: 0
+plans: []
+pricing_model: enterprise-contact-sales
+summary: >-
+  AutoFi publishes no pricing page and no plans. The site has no /pricing route
+  (HTTP 404) and the navigation carries no pricing entry — the commercial entry
+  point is "Book a Demo" at https://www.autofi.com/request-demo/. AutoFi sells to
+  dealerships, OEMs, lenders and marketplaces under negotiated contracts, and API
+  client credentials are issued as part of that relationship rather than through
+  self-serve signup.
+evidence:
+- url: https://www.autofi.com/pricing
+  status: 404
+  fetched: '2026-08-14'
+- url: https://www.autofi.com/request-demo/
+  status: 200
+  fetched: '2026-08-14'
+- url: https://api.autofi.com/api.html
+  status: 200
+  fetched: '2026-08-14'
+  note: The API reference documents no plans, quotas, tiers or billing.

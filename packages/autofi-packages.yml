@@ -1,0 +1,73 @@
+generated: '2026-08-14'
+method: searched
+source: registry + GitHub org search, 2026-08-14
+package_count: 0
+packages: []
+summary: >-
+  AutoFi ships no first-party client library in any public package registry.
+  Integrators call the REST API directly.
+registries_checked:
+- registry: npm
+  queries: [autofi, autofi-sdk, '@autofi/sdk']
+  probe: 'GET registry.npmjs.org/<pkg> -> 404 for all three'
+  keyword_search: 'registry.npmjs.org/-/v1/search?text=autofi -> 2 unrelated results (value-story, pdfinput)'
+  result: absent
+- registry: pypi
+  queries: [autofi]
+  probe: 'GET pypi.org/pypi/autofi/json -> 404'
+  result: absent
+- registry: rubygems
+  queries: [autofi]
+  probe: 'GET rubygems.org/api/v1/gems/autofi.json -> 404'
+  result: absent
+- registry: packagist
+  queries: [autofi]
+  probe: 'GET repo.packagist.org/p2/autofi/autofi.json -> 404'
+  result: absent
+- registry: nuget
+  queries: [autofi]
+  probe: 'GET azuresearch-usnc.nuget.org/query?q=autofi -> 291 hits, all AutoFixture-family packages, none AutoFi'
+  result: absent
+- registry: pkg.go.dev
+  queries: [github.com/autofi/autofi]
+  probe: 'GET proxy.golang.org/github.com/autofi/autofi/@v/list -> 404'
+  result: absent
+- registry: crates.io
+  queries: [autofi]
+  probe: 'GET crates.io/api/v1/crates/autofi -> 403 (crates.io blocked the unauthenticated agent)'
+  result: unverified
+- registry: maven-central
+  queries: [autofi]
+  probe: 'GET search.maven.org/solrsearch/select?q=autofi -> request timed out'
+  result: unverified
+github_organization:
+  url: https://github.com/AutoFi
+  public_repos: 4
+  repos:
+  - name: AutoFi/ias
+    language: JavaScript
+    description: A client for interfacing IAS direct (www.iasdirect.com) SOAP web services.
+    first_party_sdk_for_autofi_api: false
+  - name: AutoFi/slate
+    description: Fork of Slate — beautiful static documentation for your API.
+    first_party_sdk_for_autofi_api: false
+  - name: AutoFi/heroku-buildpack-pm2
+    language: Shell
+    description: Add pm2 to Heroku apps.
+    first_party_sdk_for_autofi_api: false
+  - name: AutoFi/template-assets
+    language: HCL
+    description: Port template assets.
+    first_party_sdk_for_autofi_api: false
+  note: >-
+    None of the four public repositories in AutoFi's GitHub organization is a
+    client library for the AutoFi API. AutoFi/ias is a client for a third party
+    (IAS Direct), and AutoFi/slate is a documentation-theme fork.
+notes:
+- >-
+  The API reference at api.autofi.com/api.html contains 0 occurrences of "SDK"
+  and 0 of "Postman" — no client library, code-sample library, or shared
+  collection is offered anywhere in the published surface.
+- >-
+  No `SDKs` pointer is emitted in apis.yml because there is no official SDK to
+  point at. This is a recorded absence, not an unchecked gap.

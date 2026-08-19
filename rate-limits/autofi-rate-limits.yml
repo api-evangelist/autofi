@@ -1,0 +1,55 @@
+generated: '2026-08-14'
+method: probed
+source: https://api.autofi.com/api.html
+docs: https://api.autofi.com/api.html
+limit_count: 2
+summary: >-
+  AutoFi documents the rate-limit response headers it returns but does not publish
+  the numeric quota or the window in its reference. The quota below was observed
+  live on unauthenticated responses from the production and UAT hosts on
+  2026-08-14, so it is the edge/gateway limit, not necessarily the per-API-client
+  limit applied to an authenticated token.
+headers:
+- name: X-RateLimit-Limit
+  meaning: Request quota
+  documented: true
+- name: X-RateLimit-Remaining
+  meaning: Remaining requests in quota
+  documented: true
+- name: X-RateLimit-Reset
+  meaning: UNIX timestamp the request quota will be reset after exceeding it
+  documented: true
+- name: Retry-After
+  meaning: Time in seconds to retry after
+  documented: true
+exhaustion:
+  status: 429
+  body: '{ "code": 429, "message": "Account limit exceeded." }'
+  retry_signal: Retry-After (seconds) and X-RateLimit-Reset (UNIX timestamp)
+limits:
+- scope: per-caller (production edge)
+  host: https://api.autofi.com
+  limit: 1500
+  window: undocumented
+  burst: null
+  method: probed
+  observed: '2026-08-14'
+  evidence: 'HTTP 200 GET https://api.autofi.com/api.html -> x-ratelimit-limit: 1500'
+- scope: per-caller (UAT sandbox edge)
+  host: https://api-uat.autofi.com
+  limit: 3000
+  window: undocumented
+  burst: null
+  method: probed
+  observed: '2026-08-14'
+  evidence: 'HTTP 200 GET https://api-uat.autofi.com/api.html -> x-ratelimit-limit: 3000'
+notes:
+- >-
+  The window is not published. Sampled X-RateLimit-Reset values sat 1-11 seconds
+  ahead of the request and did not align to a minute boundary, so the quota
+  refreshes on a short sub-minute rolling window rather than a fixed calendar
+  minute. Treat the exact window as unknown and honour Retry-After.
+- >-
+  The message text on 429 ("Account limit exceeded.") indicates the authenticated
+  limit is scoped to the API account, but the account-level number is not
+  published.

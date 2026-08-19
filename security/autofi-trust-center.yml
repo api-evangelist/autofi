@@ -1,0 +1,39 @@
+generated: '2026-08-14'
+method: searched
+probe: true
+url: https://trust.autofi.com/
+platform: SafeBase
+certifications:
+- SOC 2
+- SOC 3
+compliance_programs:
+- CCPA
+documents:
+- name: Data Processing Agreement
+  available: true
+  access: request via the trust portal
+controls_documented:
+- data protection
+- access controls
+- audit logging
+- multi-factor authentication
+- encryption
+- disaster recovery
+- endpoint security
+contacts:
+  security: security@autofi.com
+evidence:
+- source: https://trust.autofi.com/
+  http_status: 200
+  fetched: '2026-08-14'
+  keywords: [SOC 2, SOC 3, CCPA, trust portal, responsible disclosure, data processing agreement]
+notes:
+- >-
+  The trust portal is a client-rendered SafeBase application, so the automated
+  keyword probe (0-working/probe-security-programs.py) records a miss on it. The
+  certifications above were read from the rendered page on 2026-08-14; this file
+  is method:searched for that reason and must not be overwritten by the probe.
+- >-
+  No ISO 27001, PCI DSS, HIPAA or FedRAMP claim appears on the portal. Report
+  copies (SOC 2 / SOC 3) are gated behind an NDA request flow rather than
+  published openly.

@@ -1,0 +1,126 @@
+generated: '2026-08-14'
+method: searched
+source: https://api.autofi.com/api.html
+derived_from: openapi/autofi-api-openapi.yml
+format: vendor-envelope
+rfc9457: false
+envelope:
+  primary:
+    description: >-
+      Most error types share this structure. `code` mirrors the HTTP status,
+      `message` names the error type, and `errors` carries an array of objects
+      each describing one problem.
+    fields:
+    - name: code
+      description: reference to the status code of the response
+    - name: message
+      description: defines the error type
+    - name: errors
+      description: array of objects with the description for one or more generated errors
+    example: |
+      {
+        "code": 400,
+        "message": "Validation Error",
+        "errors": [
+          { "description": "Required field \"applicant\" was not provided." },
+          { "description": "Field \"cosigner.email\" is invalid: io." }
+        ]
+      }
+  authorization:
+    description: >-
+      401 and 404 responses use a flat single-string envelope instead of the
+      primary shape.
+    fields:
+    - name: error
+      description: '"<ErrorName>: <detail>"'
+problems:
+- status: 400
+  title: Bad Request
+  description: >-
+    The request cannot be processed. Typically due to a malformed payload.
+    Validation errors carry message "Validation Error" and one `errors[]` entry
+    per invalid field. String fields (dob, email, phone) have format and
+    character restrictions; number fields (apr, downPayment, term) and integer
+    fields (timeInMonths, monthlyPayment, year) have range requirements.
+  envelope: primary
+  source_operations:
+  - POST /v1/loan-application
+  - POST /v1/dealer/lookup
+  - POST /v1/dealmaker
+  - POST /v1/dealmaker/credit-application
+  - POST /v1/estimate/cash
+  - POST /v1/estimate/finance
+  - POST /v1/estimate/lease
+  - POST /v1/prequalification
+- status: 401
+  title: Unauthorized
+  description: >-
+    The request has invalid credentials (token). Returned for a malformed,
+    expired or absent authorization token; a new token must be requested.
+  envelope: authorization
+  documented_variants:
+  - 'UnauthorizedError: invalid token'
+  - 'UnauthorizedError: No authorization token was found'
+  - 'UnauthorizedError: Format is Authorization: Bearer [token]'
+  - 'UnauthorizedError: jwt malformed'
+  source_operations:
+  - POST /auth/token
+- status: 403
+  title: Forbidden
+  description: The request has insufficient privileges.
+  envelope: primary
+- status: 404
+  title: Not Found
+  description: The requested resource could not be found.
+  envelope: authorization
+  documented_variants:
+  - 'Error: Not Found'
+  source_operations:
+  - POST /v1/prequalification
+- status: 405
+  title: Method Not Allowed
+  description: The API does not allow this method.
+  envelope: primary
+- status: 409
+  title: Conflict
+  description: >-
+    Returned by the Dealmaker endpoints when a deal or credit application
+    already exists for the supplied referenceId.
+  envelope: primary
+  source_operations:
+  - POST /v1/dealmaker
+  - POST /v1/dealmaker/credit-application
+- status: 415
+  title: Unsupported Media Type
+  description: >-
+    The payload format is not supported. Set Content-Type to application/json.
+  envelope: primary
+- status: 429
+  title: Too Many Requests
+  description: >-
+    There were too many requests in a given amount of time. Documented message is
+    "Account limit exceeded."; Retry-After and X-RateLimit-Reset indicate when to
+    retry.
+  envelope: primary
+- status: 500
+  title: Internal Server Error
+  description: An unexpected error occurred, preventing successfully processing the request.
+  envelope: primary
+- status: 503
+  title: Service Unavailable
+  description: >-
+    An AutoFi service is unavailable, preventing successfully processing the
+    request.
+  envelope: primary
+  source_operations:
+  - POST /v1/prequalification
+notes:
+- >-
+  The reference cites RFC 7231 and the MDN HTTP status documentation for general
+  status-code semantics; it does not implement RFC 9457 problem+json.
+- >-
+  There is no numeric vendor error-code registry and no decline-reason code list.
+  Lender outcomes are surfaced as decision states (APPROVED, DECLINED, PENDING,
+  APPROVED_WITH_COUNTEROFFER, CONDITIONAL, CONDITIONAL_WITH_COUNTEROFFER) plus
+  raw lender comment strings, not as coded decline reasons — so no
+  errors/autofi-decline-codes.yml is emitted.

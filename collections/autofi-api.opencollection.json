@@ -1,0 +1,277 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "AutoFi API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Authorization",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Request an access token (JWT)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/auth/token",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Authenticate with your account's API client credentials to retrieve an access token.\n\nThe access token is required to authorize API requests.\n"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Loan Applications",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create a new loan application\n",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/loan-application",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "You can provide a callback URL through the `callbackURL` property. See the callbacks section below for more information.\n"
+        },
+        {
+          "info": {
+            "name": "Loan application details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.autofi.com/v1/loan-application/:loanApplicationId",
+            "params": [
+              {
+                "name": "loanApplicationId",
+                "value": "",
+                "type": "path",
+                "description": "The `loanApplicationId` in the response when the loan application was created."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Loan application details"
+        },
+        {
+          "info": {
+            "name": "External resources (experimental)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.autofi.com/v1/loan-application/:loanApplicationId/externalResources",
+            "params": [
+              {
+                "name": "loanApplicationId",
+                "value": "",
+                "type": "path",
+                "description": "The `loanApplicationId` in the response when the loan application was created."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Collection of resources in external systems that are associated with the loan application. External resources are updated with information about the deal during the loan application process. After the external system has been updated, external resources are available in the response, grouped by the external system type and then by the provider of each system. Currently Dealer Management Systems (DMS) are the only available external system type and the only provider is for the CDK DMS. <strong>Th"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Dealers",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Lookup AutoFi dealers",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/dealer/lookup",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Lookup AutoFi dealers"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Dealmaker",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Create Dealmaker",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/dealmaker",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "<p style=\"display: flex; flex-direction: column\"><img \nsrc=\"http://badges.github.io/stability-badges/dist/experimental.svg\" alt=\"Experimental\" \nstyle=\"width: 100%; max-width: 150px\" />\nCreate a new Dealmaker loan application.\n</p>"
+        },
+        {
+          "info": {
+            "name": "Create Credit App",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/dealmaker/credit-application",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "<p style=\"display: flex; flex-direction: column\"><img \nsrc=\"http://badges.github.io/stability-badges/dist/experimental.svg\" alt=\"Experimental\" \nstyle=\"width: 100%; max-width: 150px\" />\nCreate a new Dealmaker loan application that starts at the credit application. Use this endpoint when the\nconsumer has already selected a vehicle and is ready to apply for credit.\n<em>NOTE: Only retail finance is currently supported. This is experimental and can change in the future.</em>\n</p>"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Calculate Payment",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Cash",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/estimate/cash",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Use this endpoint to calculate estimated payments for a `cash` car deal.\n"
+        },
+        {
+          "info": {
+            "name": "Finance",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/estimate/finance",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Use this endpoint to calculate estimated payments for a `finance` car deal.\n"
+        },
+        {
+          "info": {
+            "name": "Lease",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/estimate/lease",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Use this endpoint to calculate estimated payments for a `lease` car deal.\n"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Prequalification",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Prequalification",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.autofi.com/v1/prequalification",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Prequalification can be utilized to help identify how much the user can afford. \nThis endpoint provides the maximum monthly payment, maximum loan amount, and a credit score range.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

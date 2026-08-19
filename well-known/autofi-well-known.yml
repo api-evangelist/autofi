@@ -1,0 +1,121 @@
+generated: '2026-08-14'
+method: probed
+source: live GET probes, 2026-08-14
+result: partial-hit
+summary: >-
+  Two real /.well-known/ documents are served, both on the marketing host
+  (www.autofi.com / autofi.com): an RFC 8414 OAuth 2.0 Authorization Server
+  Metadata document and an RFC 9728 OAuth 2.0 Protected Resource Metadata
+  document. Together they advertise a live, OAuth-protected MCP server at
+  https://www.autofi.com/wp-json/mcp/mcp-oauth-server. Both are served from the
+  WordPress site that runs autofi.com, not from the lending API host. Every
+  /.well-known/ path on the API hosts (api.autofi.com, api-uat.autofi.com) and on
+  auth/lender/portal returns 404 — no security.txt, no OIDC discovery, no API
+  catalog, no ai-plugin, no A2A agent card anywhere.
+gotcha: >-
+  The canonical no-trailing-slash paths 301 to the trailing-slash form on the
+  marketing host, so a probe that does not follow redirects records a 301 and
+  misses both documents. Follow the redirect; the 200 bodies are genuine JSON
+  (content-type application/json), not an HTML shell.
+hosts:
+- host: www.autofi.com
+  documents:
+  - {path: /.well-known/oauth-authorization-server, status: 301, note: redirects to trailing-slash form}
+  - {path: /.well-known/oauth-authorization-server/, status: 200, content_type: application/json,
+     file: autofi-oauth-authorization-server.json, spec: RFC 8414}
+  - {path: /.well-known/oauth-protected-resource, status: 301, note: redirects to trailing-slash form}
+  - {path: /.well-known/oauth-protected-resource/, status: 200, content_type: application/json,
+     file: autofi-oauth-protected-resource.json, spec: RFC 9728}
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: autofi.com
+  documents:
+  - {path: /.well-known/oauth-authorization-server/, status: 200, note: same document as www}
+  - {path: /.well-known/oauth-protected-resource/, status: 200, note: same document as www}
+  - {path: /.well-known/agent-card.json/, status: 404}
+- host: api.autofi.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-authorization-server/, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/oauth-protected-resource/, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: api-uat.autofi.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: auth.autofi.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: lender.autofi.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: portal.autofi.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+authorization_server:
+  issuer: https://www.autofi.com
+  authorization_endpoint: https://www.autofi.com/oauth/authorize
+  token_endpoint: https://www.autofi.com/oauth/token
+  revocation_endpoint: https://www.autofi.com/oauth/revoke
+  grant_types_supported: [authorization_code, refresh_token]
+  response_types_supported: [code]
+  code_challenge_methods_supported: [S256]
+  token_endpoint_auth_methods_supported: [none]
+  client_id_metadata_document_supported: true
+  scopes_supported: [mcp]
+protected_resource:
+  resource: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+  authorization_servers: [https://www.autofi.com]
+  bearer_methods_supported: [header]
+  scopes_supported: [mcp]
+notes:
+- >-
+  No security.txt is served on any host, so no SecurityTxt pointer is emitted.
+  AutoFi's vulnerability reporting address is published on its trust portal
+  instead — see security/autofi-vulnerability-disclosure.yml.
+- >-
+  No A2A agent card exists at either the canonical or legacy path on any host, so
+  no a2a/ artifact and no AgentCard pointer are written.

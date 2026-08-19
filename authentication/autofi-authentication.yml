@@ -1,0 +1,63 @@
+generated: '2026-08-14'
+method: searched
+source: openapi/autofi-api-openapi.yml
+docs: https://api.autofi.com/api.html
+summary:
+  types:
+  - http
+  api_key_in: []
+  oauth2_flows: []
+  model: >-
+    JWT bearer. API client credentials (clientId + clientSecret) are exchanged at
+    POST /auth/token for a short-lived JSON Web Token, which is then sent as
+    `Authorization: Bearer {token}` on every other operation. Scope strings are
+    attached to the bearer requirement per operation (see scopes/autofi-scopes.yml).
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: Bearer {token}
+  description: Get access to data while protecting your account credentials.
+  sources:
+  - openapi/autofi-api-openapi.yml
+token_endpoint:
+  operation: POST /auth/token
+  security: none (this operation declares an empty security requirement)
+  request:
+    content_type: application/json
+    required_fields:
+    - clientId
+    - clientSecret
+  response:
+    fields:
+    - name: access_token
+      description: JSON Web Token format
+    - name: expires_in
+      description: seconds after issuance the token expires in
+      documented_example: 86400
+    - name: token_type
+      documented_example: Bearer
+  errors:
+  - status: 401
+    shape: '{"error": "UnauthorizedError: invalid token"}'
+credential_issuance:
+  self_serve: false
+  note: >-
+    The reference does not publish a self-serve path to obtain clientId /
+    clientSecret. API client credentials are issued by AutoFi to dealer, OEM,
+    lender and marketplace partners; the public entry point is the demo/contact
+    form at https://www.autofi.com/request-demo/.
+environments:
+- name: Production
+  base_url: https://api.autofi.com
+- name: Test Sandbox (UAT)
+  base_url: https://api-uat.autofi.com
+notes:
+- >-
+  Documented 401 error bodies use a flat {"error": "UnauthorizedError: ..."}
+  envelope, which differs from the {code,message,errors[]} envelope used for
+  validation errors. See errors/autofi-problem-types.yml.
+- >-
+  No OAuth 2.0 authorization-server metadata is published: /.well-known/
+  oauth-authorization-server and /.well-known/openid-configuration return 404 on
+  api.autofi.com, api-uat.autofi.com and auth.autofi.com (probed 2026-08-14).

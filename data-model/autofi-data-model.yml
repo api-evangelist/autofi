@@ -1,0 +1,209 @@
+generated: '2026-08-14'
+method: derived
+source: openapi/autofi-api-openapi.yml
+docs: https://api.autofi.com/api.html
+summary: >-
+  Derived from the 174 component schemas and 11 operations of the AutoFi OpenAPI.
+  The core object is the Loan Application, created from an applicant + dealer +
+  vehicle + offer preferences, decisioned by one or more lenders through a
+  middleman (RouteOne or DealerTrack), and resolved into a pricing stack. Two
+  parallel deal shapes exist: the mature Loan Application and the experimental
+  Dealmaker (deal + credit application). Payment estimation and prequalification
+  are stateless calculators that create no persisted entity.
+identifiers:
+- name: loanApplicationId
+  type: string
+  length: 24
+  documented_example: 6148d994e93d8a0018be1234
+  note: AutoFi-assigned id returned when a loan application is created.
+- name: referenceId
+  type: string
+  documented_example: my-reference-id
+  note: >-
+    Caller-supplied external id, echoed on responses and used as the conflict key
+    on Dealmaker creation (409 when already used).
+- name: dealer code
+  type: string
+  note: Identification assigned to a dealer by AutoFi.
+- name: middlemanId
+  type: string
+  note: The dealer id inside the RouteOne / DealerTrack portal.
+- name: lenderReferenceId
+  type: string
+  note: The lender's own application id, returned on a decision.
+entities:
+- name: AccessToken
+  schema: AccessToken
+  description: clientId + clientSecret exchanged for a JWT.
+  created_by: POST /auth/token
+- name: LoanApplication
+  schema: LoanApplicationResponse / LoanApplicationData
+  description: >-
+    The central credit-application object. Carries applicant and co-applicant,
+    dealer, vehicle, trade-in, fees, taxes, offer preferences, selected products,
+    lender decisions, and a resolved pricing stack.
+  created_by: POST /v1/loan-application
+  read_by: GET /v1/loan-application/{loanApplicationId}
+  states:
+  - BEGAN_APPLICATION
+  - SUBMITTED
+  - PENDING
+  - APPROVED
+  - DECLINED
+  - ACCEPTED
+  - FI_COMPLETED
+  - ERROR
+  state_note: >-
+    pricingStack is only available after the state is ACCEPTED. The reference
+    renders a state diagram at /diagrams/loanApplicationStates-API.mmd.svg.
+- name: Applicant
+  schema: DecisioningApplicantInput
+  description: Primary borrower — name, address, phone, email, employment, income, marital status, education.
+- name: CoApplicant
+  schema: DecisioningCoApplicantInput
+  description: Optional co-borrower with a relationship code to the applicant.
+- name: Dealer
+  schema: Dealer / OemDealerInfo / LoanApplicationDealerInput / DealerCodeOnlyInput
+  description: Selling dealership — name, address, phone, logo, routeOneId, setfDealerNumber, fees, markup.
+  read_by: POST /v1/dealer/lookup
+- name: Vehicle
+  schema: DecisioningVehicleInput / FullVehicle / EstimateVehicle
+  description: VIN, year, make, model, trim, mileage, msrp, invoice, dealerRetailPrice, stockNumber, condition/age.
+- name: TradeIn
+  schema: TradeIn / LoanApplicationTradeInInput / TradeInInputSchema
+  description: Trade vehicle with payoff, ownership (owned/financed/leased), condition and lease terms.
+- name: Decision
+  schema: Decision
+  description: >-
+    One lender response — consumerState (APPROVED/DECLINED/PENDING), raw lender
+    comments, lenderReferenceId, middleman, isAccepted, and an error object when
+    the decision status is ERROR.
+- name: PricingStack
+  schema: FinancePricingStack / LeasePricingStack / BasePricingStack
+  description: The resolved deal maths — amount financed, term, APR, monthly payment, applied fees, applied taxes, rebates.
+- name: Fee
+  schema: FeeInput / FinanceFees / LeaseFees
+  description: Dealer and government fees with code, name, amount and placement.
+- name: Tax
+  schema: FinanceTaxes / LeaseTaxes / TaxItem / TaxLineItems
+  description: Applied taxes with name, amount, taxable amount and placement.
+- name: Rebate
+  schema: RebateInput / PricingStackRebateOutput / NonOemRebateInput
+  description: OEM and non-OEM incentives applied to the deal, keyed by ProgramId and rebate type.
+- name: Product
+  schema: ProductInput / BaseSelectedProduct / ProductOutput
+  description: F&I products attached to the deal by category, with price and tax.
+- name: Dealmaker
+  schema: CreateDealmakerInput / Dealmaker
+  description: Experimental deal object returning a referenceId and a consumer URL.
+  created_by: POST /v1/dealmaker
+- name: DealmakerCreditApp
+  schema: CreateDealmakerCreditAppInput / DealmakerCreditApp
+  description: >-
+    Experimental credit application against a Dealmaker deal, returning
+    loanApplicationId, referenceId, url and expiresAt.
+  created_by: POST /v1/dealmaker/credit-application
+- name: Estimate
+  schema: CashEstimateResponse / FinanceEstimateResponse / LeaseEstimateResponse
+  description: Stateless payment calculation for cash, finance or lease. Creates no persisted resource.
+  created_by:
+  - POST /v1/estimate/cash
+  - POST /v1/estimate/finance
+  - POST /v1/estimate/lease
+- name: Prequalification
+  schema: prequalification (inline response schema)
+  description: Soft-pull prequalification result including a creditScoreRange.
+  created_by: POST /v1/prequalification
+- name: ExternalResources
+  schema: ExternalResources / DmsExternalResources / CdkDmsExternalResource
+  description: Experimental links from a loan application into dealer DMS systems (CDK).
+  read_by: GET /v1/loan-application/{loanApplicationId}/externalResources
+relationships:
+- from: LoanApplication
+  to: Applicant
+  kind: has_one
+  via: applicant
+- from: LoanApplication
+  to: CoApplicant
+  kind: has_one
+  via: coApplicant
+- from: LoanApplication
+  to: Dealer
+  kind: belongs_to
+  via: dealer.code
+- from: LoanApplication
+  to: Vehicle
+  kind: has_one
+  via: vehicle
+- from: LoanApplication
+  to: TradeIn
+  kind: has_one
+  via: tradeIn
+- from: LoanApplication
+  to: Decision
+  kind: has_many
+  via: decisions[]
+- from: LoanApplication
+  to: PricingStack
+  kind: has_one
+  via: pricingStack (oneOf FinancePricingStack | LeasePricingStack)
+- from: LoanApplication
+  to: Fee
+  kind: has_many
+  via: appliedFees (anyOf FinanceFees | LeaseFees)
+- from: LoanApplication
+  to: Tax
+  kind: has_many
+  via: appliedTaxes (anyOf FinanceTaxes | LeaseTaxes)
+- from: LoanApplication
+  to: Product
+  kind: has_many
+  via: selectedProducts[]
+- from: LoanApplication
+  to: ExternalResources
+  kind: has_one
+  via: GET /v1/loan-application/{loanApplicationId}/externalResources
+- from: Decision
+  to: Lender
+  kind: belongs_to
+  via: lender code
+- from: Decision
+  to: Middleman
+  kind: belongs_to
+  via: middleman (routeOne | dealertrack)
+- from: PricingStack
+  to: Rebate
+  kind: has_many
+  via: rebates[]
+- from: DealmakerCreditApp
+  to: Dealmaker
+  kind: belongs_to
+  via: referenceId
+- from: DealmakerCreditApp
+  to: LoanApplication
+  kind: has_one
+  via: loanApplicationId
+- from: DealerLookup
+  to: Dealer
+  kind: has_many
+  via: dealers[] (OemDealerInfo)
+enumerations:
+  loan_application_state: [ACCEPTED, APPROVED, BEGAN_APPLICATION, DECLINED, ERROR, FI_COMPLETED, PENDING, SUBMITTED]
+  decision_consumer_state: [APPROVED, DECLINED, PENDING]
+  simulated_decision_state: [APPROVED, DECLINED, PENDING, APPROVED_WITH_COUNTEROFFER, CONDITIONAL, CONDITIONAL_WITH_COUNTEROFFER]
+  credit_offer_type: [FINANCE, LEASE]
+  middleman: [routeOne, dealertrack]
+external_systems:
+- name: RouteOne
+  role: credit-application middleman / lender portal
+- name: DealerTrack
+  role: credit-application middleman / lender portal
+- name: CDK
+  role: dealer management system (DMS) linked from externalResources
+counts:
+  operations: 11
+  component_schemas: 174
+  component_responses: 20
+  component_request_bodies: 2
+  component_parameters: 1
+render: null

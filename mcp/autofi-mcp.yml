@@ -1,0 +1,79 @@
+generated: '2026-08-14'
+method: probed
+status: published
+source: https://www.autofi.com/.well-known/oauth-protected-resource/
+summary: >-
+  AutoFi serves a live, OAuth-protected Model Context Protocol server from the
+  WordPress installation that runs autofi.com. It was discovered through the
+  RFC 9728 protected-resource metadata document at
+  https://www.autofi.com/.well-known/oauth-protected-resource/, which names the
+  MCP endpoint, and the RFC 8414 authorization-server document at
+  https://www.autofi.com/.well-known/oauth-authorization-server/, which publishes
+  the authorization-code + PKCE flow that guards it. Anonymous `tools/list`
+  returns HTTP 401 `mcp_unauthorized`, so the live tool schemas could not be read
+  without credentials.
+deployment:
+  mode: remote
+  endpoint: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+  auth: oauth
+  verified: probed
+server:
+  name: autofi-mcp-oauth-server
+  transport: http
+  url: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+  methods: [POST, GET, DELETE]
+  implementation: >-
+    WordPress MCP adapter (wp-json `mcp` namespace, alongside the WordPress
+    Abilities API at wp-json/wp-abilities/v1). This is a content/site MCP surface
+    on AutoFi's marketing site — it is NOT an MCP wrapper around the AutoFi
+    lending REST API at api.autofi.com.
+  additional_endpoints:
+  - url: https://www.autofi.com/wp-json/mcp/mcp-adapter-default-server
+    methods: [POST, GET, DELETE]
+    auth: gated
+    probe: 'POST tools/list -> 401 rest_forbidden "Sorry, you are not allowed to do that."'
+  - url: https://www.autofi.com/wp-json/jet-engine/v1/mcp
+    methods: [GET, POST]
+    auth: gated
+    probe: 'GET -> 401 rest_forbidden "You cannot access this resource."'
+  - url: https://www.autofi.com/wp-json/jet-engine/v1/mcp-tools
+    methods: [GET]
+    auth: gated
+    probe: 'GET -> 401 rest_forbidden "You cannot view the feature list."'
+oauth:
+  authorization_server: https://www.autofi.com
+  metadata: well-known/autofi-oauth-authorization-server.json
+  protected_resource_metadata: well-known/autofi-oauth-protected-resource.json
+  authorization_endpoint: https://www.autofi.com/oauth/authorize
+  token_endpoint: https://www.autofi.com/oauth/token
+  revocation_endpoint: https://www.autofi.com/oauth/revoke
+  grant_types: [authorization_code, refresh_token]
+  pkce: S256
+  dynamic_client_registration: client_id_metadata_document_supported
+  scopes: [mcp]
+tools: []
+tools_note: >-
+  NOT DERIVED AND NOT GUESSED. The live tool list is auth-gated behind the `mcp`
+  OAuth scope, and AutoFi publishes no llms.txt or MCP documentation page from
+  which names could be read. Input schemas require authenticated introspection.
+  No candidate tools have been synthesised from the REST OpenAPI, because these
+  are different products: the MCP server front-ends the WordPress site, while
+  the OpenAPI describes the lending API on api.autofi.com.
+x-evidence:
+- fetched: '2026-08-14'
+  url: https://www.autofi.com/.well-known/oauth-protected-resource/
+  http_status: 200
+  content_type: application/json
+- fetched: '2026-08-14'
+  url: https://www.autofi.com/.well-known/oauth-authorization-server/
+  http_status: 200
+  content_type: application/json
+- fetched: '2026-08-14'
+  url: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+  method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+  http_status: 401
+  body: '{"code":"mcp_unauthorized","message":"MCP authentication required.","data":{"status":401}}'
+- fetched: '2026-08-14'
+  url: https://www.autofi.com/wp-json/mcp
+  http_status: 200
+  note: WordPress REST namespace index listing the mcp routes

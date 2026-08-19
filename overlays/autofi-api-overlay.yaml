@@ -1,0 +1,70 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the AutoFi API
+  version: 1.0.0
+extends: openapi/autofi-api-openapi.yml
+x-generated: '2026-08-14'
+x-method: generated
+x-source: >-
+  Enhancements derived from the AutoFi OpenAPI harvested from the Redoc bundle at
+  https://api.autofi.com/api.html on 2026-08-14. The original document is never
+  mutated; every change AutoFi's spec does not carry is expressed here.
+x-note: >-
+  The single largest machine-readability gap in the AutoFi contract is that NOT
+  ONE of its 11 operations declares an operationId. Every tool generator, SDK
+  generator, Arazzo workflow and MCP tool binding needs one, so this overlay
+  proposes an operationId per operation, in AutoFi's own naming style. These are
+  API Evangelist proposals, not AutoFi-published identifiers.
+actions:
+- target: $.info
+  update:
+    x-apievangelist-profile: https://apis.io/provider/autofi/
+    x-apievangelist-harvested-from: https://api.autofi.com/api.html
+    x-apievangelist-harvest-method: redoc-embedded-state
+- target: $.paths['/auth/token'].post
+  update:
+    operationId: createAccessToken
+- target: $.paths['/v1/loan-application'].post
+  update:
+    operationId: createLoanApplication
+- target: $.paths['/v1/loan-application/{loanApplicationId}'].get
+  update:
+    operationId: getLoanApplication
+- target: $.paths['/v1/loan-application/{loanApplicationId}/externalResources'].get
+  update:
+    operationId: getLoanApplicationExternalResources
+- target: $.paths['/v1/dealer/lookup'].post
+  update:
+    operationId: lookupDealers
+- target: $.paths['/v1/dealmaker'].post
+  update:
+    operationId: createDealmaker
+- target: $.paths['/v1/dealmaker/credit-application'].post
+  update:
+    operationId: createDealmakerCreditApplication
+- target: $.paths['/v1/estimate/cash'].post
+  update:
+    operationId: createCashEstimate
+- target: $.paths['/v1/estimate/finance'].post
+  update:
+    operationId: createFinanceEstimate
+- target: $.paths['/v1/estimate/lease'].post
+  update:
+    operationId: createLeaseEstimate
+- target: $.paths['/v1/prequalification'].post
+  update:
+    operationId: createPrequalification
+- target: $.components.securitySchemes.bearerAuth
+  update:
+    x-token-endpoint: https://api.autofi.com/auth/token
+    x-grant: client-credentials-exchange
+    x-scopes-documented-in: scopes/autofi-scopes.yml
+- target: $.paths['/v1/dealmaker'].post
+  update:
+    x-stability: experimental
+- target: $.paths['/v1/dealmaker/credit-application'].post
+  update:
+    x-stability: experimental
+- target: $.paths['/v1/loan-application/{loanApplicationId}/externalResources'].get
+  update:
+    x-stability: experimental

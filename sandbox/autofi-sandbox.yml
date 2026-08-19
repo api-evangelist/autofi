@@ -1,0 +1,97 @@
+generated: '2026-08-14'
+method: searched
+source: https://api.autofi.com/api.html
+derived_from: openapi/autofi-api-openapi.yml
+summary: >-
+  AutoFi runs a separate UAT sandbox host and ships in-contract lender-decision
+  simulation. A caller can request a specific lender outcome, from a specific
+  lender, with a specific latency, without touching RouteOne or DealerTrack.
+environments:
+- name: Test Sandbox
+  base_url: https://api-uat.autofi.com
+  live: false
+- name: Production
+  base_url: https://api.autofi.com
+  live: true
+credential_separation:
+  model: separate-host
+  key_prefixes: none
+  note: >-
+    AutoFi does not use test-vs-live key prefixes. The same clientId /
+    clientSecret credential shape is used, and the environment is selected by
+    the host you call. Credentials are issued by AutoFi per environment; there
+    is no self-serve sandbox signup.
+simulation:
+  field: simulate
+  applies_to:
+  - POST /v1/loan-application
+  description: >-
+    Request a test response from one or more lenders. When omitted, the loan
+    application is handled according to the default rules defined for the
+    environment. In uat the AutoFi Test Environment is used and approvals are
+    returned for all lenders; in production the loan application is submitted to
+    RouteOne / DealerTrack for live decisioning.
+  environments:
+  - value: AUTOFI_TEST
+    meaning: >-
+      Test against the AutoFi Test Environment. Requires an array of `decisions`
+      to be simulated. This is the default.
+  - value: LENDER_TEST
+    meaning: Test end to end against the RouteOne / DealerTrack lender test environment.
+  decision:
+    fields:
+    - name: decision
+      required: true
+      values:
+      - APPROVED
+      - DECLINED
+      - PENDING
+      - APPROVED_WITH_COUNTEROFFER
+      - CONDITIONAL
+      - CONDITIONAL_WITH_COUNTEROFFER
+    - name: lender
+      required: true
+      description: The lender the decision should be simulated for.
+    - name: delay
+      required: false
+      description: How long the simulated decision should take to return, in milliseconds.
+      documented_example: 75000
+    - name: middleman
+      required: false
+      description: The middleman the decision should be simulated from (RouteOne / DealerTrack).
+  lender_codes:
+  - ALLY
+  - BOFA
+  - CHASE
+  - EXETER
+  - FIFS
+  - FMCC
+  - GLS
+  - GMFL
+  - HBAN
+  - LAFSNC
+  - RBC
+  - SANT
+  - SCF
+  - SETF
+  - TRICOR
+  - VROOM
+  - WEST
+test_values:
+  note: >-
+    AutoFi publishes no magic test card numbers, test SSNs, or test bank
+    accounts. The published fixtures are the lender codes and decision states
+    above, plus the documented example loanApplicationId format below. Nothing
+    here is invented — every value is copied from the published reference.
+  loan_application_id:
+    format: 24-character string
+    documented_example: 6148d994e93d8a0018be1234
+consumer_urls:
+  note: >-
+    Loan application and Dealmaker responses return a consumer-experience `url`
+    (and `agentUrl` for loan applications). The reference states the consumer URL
+    expires 30 days after creation.
+rate_limits:
+  uat_observed_limit: 3000
+  production_observed_limit: 1500
+  note: The UAT edge quota observed on 2026-08-14 is twice the production edge quota.

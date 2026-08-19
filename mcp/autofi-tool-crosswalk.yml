@@ -1,0 +1,66 @@
+generated: '2026-08-14'
+method: derived
+source: openapi/autofi-api-openapi.yml + mcp/autofi-mcp.yml
+summary: >-
+  AutoFi's two machine-readable surfaces are not projections of one core — they
+  are two different products on two different hosts. The OpenAPI at
+  api.autofi.com describes the Lending-as-a-Service REST API; the MCP server at
+  www.autofi.com/wp-json/mcp/mcp-oauth-server is a WordPress content surface on
+  the marketing site. There is therefore NO tool-to-operation binding to record,
+  and none has been invented. The crosswalk exists to state that divergence
+  explicitly and to catalogue the REST operations that no agent tool reaches.
+surfaces:
+  openapi:
+    file: openapi/autofi-api-openapi.yml
+    host: https://api.autofi.com
+    gated: false
+    note: Reference is public at https://api.autofi.com/api.html; calling it requires issued client credentials.
+  mcp:
+    url: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+    gated: true
+    note: 'Anonymous tools/list returns 401 mcp_unauthorized; the `mcp` OAuth scope is required.'
+  graphql:
+    url: null
+    note: No GraphQL surface found on any AutoFi host.
+crosswalk: []
+mcp_only: []
+mcp_note: >-
+  The MCP tool list could not be read. It is auth-gated and AutoFi publishes no
+  llms.txt and no MCP documentation page, so there are no tool names to map —
+  not even by semantics. Re-run this crosswalk if AutoFi publishes its tool list
+  or opens anonymous introspection.
+rest_only:
+- capability: Authorization
+  operations:
+  - POST /auth/token
+- capability: Loan applications
+  operations:
+  - POST /v1/loan-application
+  - GET /v1/loan-application/{loanApplicationId}
+  - GET /v1/loan-application/{loanApplicationId}/externalResources
+- capability: Dealers
+  operations:
+  - POST /v1/dealer/lookup
+- capability: Dealmaker
+  operations:
+  - POST /v1/dealmaker
+  - POST /v1/dealmaker/credit-application
+- capability: Payment estimation
+  operations:
+  - POST /v1/estimate/cash
+  - POST /v1/estimate/finance
+  - POST /v1/estimate/lease
+- capability: Prequalification
+  operations:
+  - POST /v1/prequalification
+coverage:
+  tools_named: 0
+  tools_bound: 0
+  mcp_only: 0
+  rest_operations_total: 11
+  rest_operations_with_tool: 0
+notes:
+- >-
+  The OpenAPI declares no operationIds, so REST operations are addressed by
+  method + path throughout this repo. overlays/autofi-api-overlay.yaml proposes
+  operationIds as an API Evangelist enhancement without mutating the original.

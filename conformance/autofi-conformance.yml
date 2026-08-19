@@ -1,0 +1,91 @@
+generated: '2026-08-14'
+method: derived
+source: openapi/autofi-api-openapi.yml + https://api.autofi.com/api.html + https://trust.autofi.com/
+standards:
+- id: openapi-3.0
+  conforms: true
+  evidence: 'openapi: 3.0.0 document published at api.autofi.com/api.html (Redoc bundle)'
+- id: openapi-3.1
+  conforms: false
+  evidence: Document declares 3.0.0, not 3.1.x.
+- id: oauth2
+  conforms: partial
+  evidence: >-
+    The lending API uses an http bearer JWT obtained from a proprietary
+    clientId/clientSecret exchange at POST /auth/token, not an RFC 6749 grant.
+    Separately, the marketing host publishes a real RFC 8414 authorization-server
+    metadata document with authorization_code + refresh_token grants and PKCE
+    S256, guarding the MCP server.
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: well-known/autofi-oauth-authorization-server.json (HTTP 200, www.autofi.com)
+- id: rfc9728-oauth-protected-resource-metadata
+  conforms: true
+  evidence: well-known/autofi-oauth-protected-resource.json (HTTP 200, www.autofi.com)
+- id: pkce-rfc7636
+  conforms: true
+  evidence: 'code_challenge_methods_supported: [S256] in the authorization-server metadata'
+- id: oidc
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on every host probed.
+- id: mcp
+  conforms: true
+  evidence: >-
+    Live MCP endpoint at https://www.autofi.com/wp-json/mcp/mcp-oauth-server
+    responding to JSON-RPC with a spec-shaped 401 challenge; see mcp/autofi-mcp.yml.
+- id: a2a
+  conforms: false
+  evidence: No agent card at /.well-known/agent-card.json or /.well-known/agent.json on any host.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: >-
+    Errors use a vendor {code,message,errors[]} envelope (and a flat {error}
+    envelope for 401/404); no application/problem+json media type appears.
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on every host probed.
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: No Sunset or Deprecation header is documented; deprecation is marked in-schema only.
+- id: rfc6585-rate-limit-headers
+  conforms: partial
+  evidence: >-
+    Legacy X-RateLimit-Limit / -Remaining / -Reset plus Retry-After are documented
+    and observed live; the IETF draft `RateLimit` / `RateLimit-Policy` headers are
+    not used.
+- id: idempotency-key
+  conforms: false
+  evidence: No Idempotency-Key header or parameter anywhere in the spec or reference.
+- id: pagination
+  conforms: false
+  evidence: No collection endpoint and no page/limit/cursor parameters are published.
+- id: asyncapi
+  conforms: false
+  evidence: >-
+    No AsyncAPI document is published. An event surface does exist — OpenAPI 3.0
+    `callbacks` on POST /v1/loan-application and POST
+    /v1/dealmaker/credit-application — but it is described in OpenAPI, not
+    AsyncAPI. See asyncapi/autofi-webhooks.yml.
+- id: openapi-callbacks
+  conforms: true
+  evidence: 'Two operations declare a `callbacks` object targeting {$request.body#/callbackUrl}.'
+- id: json-api
+  conforms: false
+  evidence: Plain JSON resource representations; no JSON:API media type or document structure.
+compliance_program:
+  published: true
+  url: https://trust.autofi.com/
+  certifications:
+  - SOC 2
+  - SOC 3
+  regulations:
+  - CCPA
+  detail: security/autofi-trust-center.yml
+industry_context:
+  sector: automotive retail finance
+  note: >-
+    AutoFi routes credit applications to lenders through RouteOne and DealerTrack,
+    the two US auto-finance middlemen named in the spec. Neither integration is
+    described by a published conformance profile, and AutoFi makes no public
+    claim of conformance to an auto-finance data standard (for example STAR or
+    ADF) in its API reference.

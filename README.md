@@ -42,6 +42,31 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-AutoFi is a company surfaced as a portfolio company of 500-global and added to the API Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+AutoFi ("The Sales Momentum Company") is an AI-powered automotive commerce platform connecting
+online and in-store car buying for dealerships, OEMs, lenders and marketplaces. It was surfaced as a
+portfolio company of 500 Global.
+
+## What this profile holds
+
+AutoFi publishes a public REST API — its Lending-as-a-Service surface — documented at
+[api.autofi.com/api.html](https://api.autofi.com/api.html). The OpenAPI 3.0.0 document behind that
+Redoc page (11 operations, 174 component schemas) is harvested to `openapi/`, and everything in
+`authentication/`, `scopes/`, `conventions/`, `errors/`, `data-model/`, `sandbox/`, `rate-limits/`,
+`lifecycle/`, `asyncapi/` and `skills/` is derived from it or from the published reference.
+
+Highlights:
+
+- **JWT client-credential auth** — `POST /auth/token` exchanges a clientId/clientSecret for a bearer
+  token; seven scope strings are attached to the per-operation security requirement.
+- **Lender decisioning** — loan applications are routed to lenders through RouteOne or DealerTrack,
+  with decisions returned as OpenAPI `callbacks` to a caller-supplied `callbackUrl`.
+- **A real sandbox** — `api-uat.autofi.com`, with in-contract simulation of a named lender's decision
+  (including a `delay` in milliseconds) so integrators can test without touching a lender.
+- **A live OAuth-protected MCP server** at `www.autofi.com/wp-json/mcp/mcp-oauth-server`, advertised by
+  RFC 8414 and RFC 9728 metadata on the marketing host. It is a WordPress content surface, not a
+  wrapper around the lending API.
+
+Recorded absences (checked, not assumed): no SDK in any public package registry, no idempotency key,
+no pagination, no security.txt, no A2A agent card, no published pricing, no API changelog.
 
 Backed by: 500-global — https://autofi.com

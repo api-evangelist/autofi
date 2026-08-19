@@ -1,0 +1,34 @@
+generated: '2026-08-14'
+method: generated
+source: openapi/autofi-api-openapi.yml + https://api.autofi.com/api.html
+note: >-
+  AutoFi publishes no AGENTS.md and no provider-authored skills. These are API
+  Evangelist skills generated from the published OpenAPI and reference. The
+  AutoFi spec declares NO operationIds, so every step is grounded in a verbatim
+  method + path from the contract rather than an invented identifier.
+skills:
+- file: autofi-authorize.md
+  name: Authorize against the AutoFi API
+  api: openapi/autofi-api-openapi.yml
+  operations:
+  - POST /auth/token
+- file: autofi-loan-application.md
+  name: Submit a loan application and receive lender decisions
+  api: openapi/autofi-api-openapi.yml
+  operations:
+  - POST /v1/loan-application
+  - GET /v1/loan-application/{loanApplicationId}
+  - GET /v1/loan-application/{loanApplicationId}/externalResources
+- file: autofi-estimate-payments.md
+  name: Estimate cash, finance and lease payments
+  api: openapi/autofi-api-openapi.yml
+  operations:
+  - POST /v1/dealer/lookup
+  - POST /v1/estimate/cash
+  - POST /v1/estimate/finance
+  - POST /v1/estimate/lease
+- file: autofi-prequalification.md
+  name: Run a prequalification for a shopper
+  api: openapi/autofi-api-openapi.yml
+  operations:
+  - POST /v1/prequalification

@@ -1,0 +1,61 @@
+generated: '2026-08-14'
+method: derived
+source: openapi/autofi-api-openapi.yml
+docs: https://api.autofi.com/api.html
+note: >-
+  AutoFi does not declare an `oauth2` securityScheme. It declares a single `http`
+  `bearer` scheme (`bearerAuth`) and attaches scope strings to the per-operation
+  security requirement, so the scope vocabulary below is read from the
+  `security[].bearerAuth[]` arrays in the OpenAPI rather than from an oauth2
+  `flows.scopes` map. The reference does not publish a standalone scope /
+  permission page, and no authorization-server metadata document is served, so
+  these seven scopes are the complete published vocabulary as of this pass.
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: Bearer {token}
+  token_endpoint: https://api.autofi.com/auth/token
+  grant: client credentials (clientId + clientSecret exchanged for a JWT)
+  source: openapi/autofi-api-openapi.yml
+scopes:
+- scope: create:loanapplications
+  description: Create a new loan application.
+  operations:
+  - POST /v1/loan-application
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: read:loanapplications
+  description: Read loan application details and external resources.
+  operations:
+  - GET /v1/loan-application/{loanApplicationId}
+  - GET /v1/loan-application/{loanApplicationId}/externalResources
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: lookup:dealers
+  description: Look up AutoFi dealers.
+  operations:
+  - POST /v1/dealer/lookup
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: create:dealmaker
+  description: Create a Dealmaker loan application (experimental).
+  operations:
+  - POST /v1/dealmaker
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: create:dealmakercredit
+  description: Create a Dealmaker credit application (experimental).
+  operations:
+  - POST /v1/dealmaker/credit-application
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: create:estimate
+  description: Calculate cash, finance and lease payment estimates.
+  operations:
+  - POST /v1/estimate/cash
+  - POST /v1/estimate/finance
+  - POST /v1/estimate/lease
+  sources: [openapi/autofi-api-openapi.yml]
+- scope: create:prequalification
+  description: Submit a prequalification request.
+  operations:
+  - POST /v1/prequalification
+  sources: [openapi/autofi-api-openapi.yml]
+unscoped_operations:
+- POST /auth/token

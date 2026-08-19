@@ -1,0 +1,105 @@
+generated: '2026-08-14'
+method: searched
+source: https://api.autofi.com/api.html
+derived_from: openapi/autofi-api-openapi.yml
+summary: >-
+  Resource-oriented JSON REST API. JWT bearer auth obtained from a client-credentials
+  exchange, URI-path versioning (/v1), a two-environment production/UAT split, a
+  {code,message,errors[]} error envelope for validation and service errors, and
+  X-RateLimit-* / Retry-After rate-limit signalling. Event delivery exists as
+  OpenAPI `callbacks` to a caller-supplied callbackUrl, with no retry and no
+  signing. AutoFi publishes NO idempotency contract and NO pagination contract.
+authentication:
+  style: http-bearer-jwt
+  header: 'Authorization: Bearer {token}'
+  token_endpoint: POST /auth/token
+  credentials: clientId + clientSecret (JSON body)
+  token_ttl_documented: 86400 seconds (documented `expires_in` example)
+  detail: authentication/autofi-authentication.yml
+idempotency:
+  supported: false
+  evidence: >-
+    No Idempotency-Key header, parameter, or retry-safety statement appears
+    anywhere in the OpenAPI or the published reference (0 matches for
+    "idempoten" across the full api.autofi.com/api.html document, 2026-08-14).
+    All six creation endpoints (/v1/loan-application, /v1/dealmaker,
+    /v1/dealmaker/credit-application, /v1/estimate/*, /v1/prequalification) are
+    POSTs with no de-duplication key. Dealmaker creation instead returns a 409
+    when a deal already exists for the supplied referenceId, which is a
+    conflict signal, not an idempotency contract.
+pagination:
+  supported: false
+  evidence: >-
+    No collection endpoint is published. The only GETs are single-resource reads
+    by loanApplicationId; POST /v1/dealer/lookup returns a `dealers` array with
+    no page/limit/cursor parameters.
+versioning:
+  scheme: uri-path
+  current: v1
+  note: >-
+    /auth/token sits outside the version prefix. No API-Version header, no
+    date-based version train, and no published version-change policy.
+  in_contract_deprecation: >-
+    13 schema properties carry `deprecated: true` with in-description migration
+    guidance (e.g. incomeReported -> employmentIncome + otherIncome, ficoRange ->
+    creditScoreRange, taxItems -> appliedTaxes). See lifecycle/autofi-lifecycle.yml.
+environments:
+- name: Production
+  base_url: https://api.autofi.com
+- name: Test Sandbox
+  base_url: https://api-uat.autofi.com
+request:
+  content_type: application/json
+  note: >-
+    The reference states the Content-Type header for POST and PUT requests should
+    be set to application/json unless otherwise noted.
+response_headers:
+- name: X-RateLimit-Limit
+  meaning: Request quota
+- name: X-RateLimit-Remaining
+  meaning: Remaining requests in quota
+- name: X-RateLimit-Reset
+  meaning: UNIX timestamp the request quota will be reset after exceeding it
+- name: Retry-After
+  meaning: Time in seconds to retry after
+- name: X-Response-Time
+  meaning: The time in milliseconds it took to respond to the request
+request_tracing:
+  header: X-Request-Id
+  method: probed
+  note: >-
+    Not documented in the reference, but api.autofi.com returns an
+    `x-request-id` UUID on every response (observed 2026-08-14).
+error_envelope:
+  primary:
+    shape: '{ "code": <int>, "message": <string>, "errors": [ { "description": <string> } ] }'
+    used_by: 400 validation errors, 429 rate limiting, 503 service unavailable
+  secondary:
+    shape: '{ "error": "<ErrorName>: <detail>" }'
+    used_by: 401 authorization errors, 404 not found
+  rfc9457: false
+  detail: errors/autofi-problem-types.yml
+rate_limits:
+  signalled: true
+  detail: rate-limits/autofi-rate-limits.yml
+events:
+  webhooks: true
+  vocabulary: callbacks
+  streaming: false
+  evidence: >-
+    AutoFi does not use the word "webhook" anywhere (0 matches in the published
+    reference), but it declares a first-class OpenAPI `callbacks` object on
+    POST /v1/loan-application and POST /v1/dealmaker/credit-application. The
+    caller supplies a required `callbackUrl` and AutoFi POSTs the full
+    loan-application document plus a timestamp to it on each of the eight
+    loan-application state transitions.
+  retries: false
+  signing: none
+  detail: asyncapi/autofi-webhooks.yml
+cross_links:
+  authentication: authentication/autofi-authentication.yml
+  scopes: scopes/autofi-scopes.yml
+  errors: errors/autofi-problem-types.yml
+  lifecycle: lifecycle/autofi-lifecycle.yml
+  rate_limits: rate-limits/autofi-rate-limits.yml
+  sandbox: sandbox/autofi-sandbox.yml

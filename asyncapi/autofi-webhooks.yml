@@ -1,0 +1,80 @@
+generated: '2026-08-14'
+method: derived
+source: openapi/autofi-api-openapi.yml
+docs: https://api.autofi.com/api.html
+spec_type: Webhooks
+asyncapi_published: false
+asyncapi_note: >-
+  AutoFi publishes no AsyncAPI document. It does declare a first-class OpenAPI
+  3.0 `callbacks` object on two operations, which is a real, machine-readable
+  event surface — that catalog is captured below verbatim from the contract. No
+  AsyncAPI has been authored on AutoFi's behalf.
+summary: >-
+  AutoFi calls them callbacks, not webhooks. The consumer supplies a
+  `callbackUrl` when creating a loan application; AutoFi then POSTs the full
+  loan-application document to that URL every time the application changes
+  state — most importantly when a lender approves or declines. There is no
+  subscription API, no signature scheme, and explicitly no retry.
+delivery:
+  style: per-request callback URL
+  subscription_model: >-
+    Set at creation time on the request body, not registered out of band. There
+    is no endpoint to list, update or delete callback registrations.
+  transport: HTTPS POST
+  content_type: application/json
+  expected_response: 200
+  retries: false
+  retry_note: >-
+    Verbatim from the reference: "Callbacks do not have a re-try function." A
+    consumer that misses or fails a callback must fall back to polling GET
+    /v1/loan-application/{loanApplicationId}.
+  signing: none
+  signing_note: >-
+    No signature header, shared secret, or mTLS verification is documented. A
+    receiver cannot cryptographically verify that a callback came from AutoFi.
+  ordering: not documented
+  ip_allowlist: not documented
+callbacks:
+- name: createLoanAppCallback
+  declared_on:
+  - POST /v1/loan-application
+  - POST /v1/dealmaker/credit-application
+  target: '{$request.body#/callbackUrl}'
+  method: POST
+  summary: Loan Application callback
+  description: >-
+    AutoFi REST APIs use callbacks for event notifications, such as lender
+    decisions when applying for credit. Callbacks are outbound API calls that
+    notify you when an event has occurred.
+  payload:
+    schema: LoanApplicationData
+    additional_fields:
+    - name: timestamp
+      type: string
+      format: date-time
+      documented_example: '2022-03-09T16:26:18.284Z'
+    note: >-
+      The callback body carries the same information as the GET Loan Application
+      endpoint, plus a timestamp.
+  events:
+  - state: BEGAN_APPLICATION
+  - state: SUBMITTED
+  - state: PENDING
+  - state: APPROVED
+  - state: DECLINED
+  - state: ACCEPTED
+  - state: FI_COMPLETED
+  - state: ERROR
+  event_note: >-
+    The reference lists these eight loan-application states as the event
+    triggers. A notification fires when a new event takes place — for example
+    when a lender approves or declines an application.
+consumer_requirements:
+- The callbackUrl is REQUIRED on POST /v1/loan-application (it is in the request body's `required` list).
+- 'It must be a valid absolute URL; a malformed value fails validation with: Field "callbackUrl" is invalid: Must be a valid URL.'
+- 'Documented example: https://my-domain.com/customers/1/updateCreditApp'
+gaps:
+- No AsyncAPI document.
+- No delivery retry, so at-most-once delivery.
+- No payload signing or authentication of the inbound call.
+- No event-delivery log or replay endpoint.

@@ -1,0 +1,1921 @@
+{
+  "item": [
+    {
+      "id": "0c434a81-cc14-42b7-a8b9-af1520593f3b",
+      "name": "Authorization",
+      "description": {
+        "content": "To authorize requests to the AutoFi API you will need an `Access Token` (JWT).\n\nRequesting an `Access Token` requires authentication credentials which you can retrieve from the AutoFi admin panel (coming soon).\n\nOnce you have your `Access Token` you pass it in along in the authorization HTTP header like this:\n```\ncurl -X GET \"https://api-uat.autofi.com/v1/loan-application/abcde\" \\\n-H \"Authorization: Bearer 714552c6148e1617aeab526d0606184b94a80ec048fc09894ff1a72b740c5f19\"\n```\nGenerally, all API endpoints require token authorization, except where noted otherwise (the endpoint description will be lacking the Authorization requirement).\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "48414081-8c1f-4ee9-af14-4907b90ed1b5",
+          "name": "Request an access token (JWT)",
+          "request": {
+            "name": "Request an access token (JWT)",
+            "description": {
+              "content": "Authenticate with your account's API client credentials to retrieve an access token.\n\nThe access token is required to authorize API requests.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "auth",
+                "token"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"<string>\",\n  \"clientSecret\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b7881c3c-021c-4624-b2de-5f358a77e838",
+              "name": "JWT",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "auth",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientId\": \"avWXpEjNfB7QgjH9hs3rokgZVQgUiiG6\",\n  \"clientSecret\": \"LWFE=QRv4uqcM/Vx*c>HnPQXMj3BWzpMpvgeg[URM>9YT/rZVYKT9tPbuRdvQiAf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access_token\": \"string\",\n  \"expires_in\": 86400,\n  \"token_type\": \"Bearer\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c0a74e48-a8d1-464b-bdcf-86819eaef0fa",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "auth",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clientId\": \"avWXpEjNfB7QgjH9hs3rokgZVQgUiiG6\",\n  \"clientSecret\": \"LWFE=QRv4uqcM/Vx*c>HnPQXMj3BWzpMpvgeg[URM>9YT/rZVYKT9tPbuRdvQiAf\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"access_denied\",\n  \"error_description\": \"Unauthorized\",\n  \"error_id\": null\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "d0199a3c-a095-46d8-9db8-8ec032d395c5",
+      "name": "Loan Applications",
+      "description": {
+        "content": "This section provides the methods available to submit and retrieve loan applications for your organization.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "4dd7d5c9-d202-43b4-a2e3-317674b151b3",
+          "name": "Create a new loan application\n",
+          "request": {
+            "name": "Create a new loan application\n",
+            "description": {
+              "content": "You can provide a callback URL through the `callbackURL` property. See the callbacks section below for more information.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "loan-application"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"<string>\",\n      \"last\": \"<string>\",\n      \"middle\": \"<string>\",\n      \"suffix\": \"<string>\"\n    },\n    \"address\": {\n      \"city\": \"<string>\",\n      \"residenceTimeInMonths\": \"<integer>\",\n      \"residenceType\": \"<string>\",\n      \"state\": \"<string>\",\n      \"street\": \"<string>\",\n      \"zip\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"residenceMonthlyPayment\": \"<integer>\"\n    },\n    \"phone\": \"<string>\",\n    \"email\": \"<email>\",\n    \"ssn\": \"<string>\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": \"<integer>\",\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"<string>\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"<string>\",\n      \"employerZip\": \"<string>\"\n    },\n    \"dob\": \"<date>\",\n    \"previousAddress\": {\n      \"city\": \"<string>\",\n      \"residenceTimeInMonths\": \"<integer>\",\n      \"residenceType\": \"<string>\",\n      \"state\": \"<string>\",\n      \"street\": \"<string>\",\n      \"zip\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"residenceMonthlyPayment\": \"<integer>\"\n    },\n    \"maritalStatus\": \"<string>\",\n    \"educationLevel\": \"<string>\",\n    \"previousEmployment\": {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": \"<float>\",\n    \"otherIncome\": [\n      {\n        \"amount\": \"<float>\",\n        \"source\": \"<string>\"\n      },\n      {\n        \"amount\": \"<float>\",\n        \"source\": \"<string>\"\n      }\n    ],\n    \"creditScore\": \"<int64>\"\n  },\n  \"callbackUrl\": \"<uri>\",\n  \"dealer\": {\n    \"code\": \"<string>\",\n    \"middleman\": \"<string>\",\n    \"middlemanId\": \"<string>\",\n    \"state\": \"<string>\"\n  },\n  \"offerPreferences\": {\n    \"downPayment\": 0,\n    \"requestedOfferType\": \"<string>\",\n    \"term\": \"<integer>\",\n    \"apr\": \"<float>\",\n    \"isSubvented\": \"<boolean>\",\n    \"annualMileage\": \"<integer>\",\n    \"incentiveOption\": \"LOWEST_MONTHLY\"\n  },\n  \"vehicle\": {\n    \"age\": \"<string>\",\n    \"dealerRetailPrice\": \"<integer>\",\n    \"make\": \"<string>\",\n    \"model\": \"<string>\",\n    \"vin\": \"<string>\",\n    \"year\": \"<integer>\",\n    \"bookoutValue\": \"<float>\",\n    \"modelCode\": \"<string>\",\n    \"trim\": \"<string>\",\n    \"bodyType\": \"<string>\",\n    \"color\": \"<string>\",\n    \"invoice\": \"<float>\",\n    \"maintenanceCosts\": \"<object>\",\n    \"mileage\": \"<integer>\",\n    \"msrp\": \"<float>\",\n    \"stockNumber\": \"<string>\",\n    \"photoUrl\": \"<uri>\",\n    \"fuelType\": \"GASOLINE\"\n  },\n  \"cosigner\": {\n    \"name\": {\n      \"first\": \"<string>\",\n      \"last\": \"<string>\",\n      \"middle\": \"<string>\",\n      \"suffix\": \"<string>\"\n    },\n    \"address\": {\n      \"city\": \"<string>\",\n      \"residenceTimeInMonths\": \"<integer>\",\n      \"residenceType\": \"<string>\",\n      \"state\": \"<string>\",\n      \"street\": \"<string>\",\n      \"zip\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"residenceMonthlyPayment\": \"<integer>\"\n    },\n    \"phone\": \"<string>\",\n    \"email\": \"<email>\",\n    \"ssn\": \"<string>\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": \"<integer>\",\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"<string>\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"<string>\",\n      \"employerZip\": \"<string>\"\n    },\n    \"dob\": \"<date>\",\n    \"previousAddress\": {\n      \"city\": \"<string>\",\n      \"residenceTimeInMonths\": \"<integer>\",\n      \"residenceType\": \"<string>\",\n      \"state\": \"<string>\",\n      \"street\": \"<string>\",\n      \"zip\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"residenceMonthlyPayment\": \"<integer>\"\n    },\n    \"maritalStatus\": \"<string>\",\n    \"educationLevel\": \"<string>\",\n    \"previousEmployment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": \"<integer>\",\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"<string>\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"<string>\",\n      \"employerZip\": \"<string>\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": \"<float>\",\n    \"otherIncome\": [\n      {\n        \"amount\": \"<float>\",\n        \"source\": \"<string>\"\n      },\n      {\n        \"amount\": \"<float>\",\n        \"source\": \"<string>\"\n      }\n    ],\n    \"relationship\": \"<string>\",\n    \"relationshipCode\": \"<string>\"\n  },\n  \"fees\": [\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"referenceId\": \"<string>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    },\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"referenceId\": \"<string>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"<string>\",\n      \"type\": \"<string>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    },\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"<string>\",\n      \"type\": \"<string>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    }\n  ],\n  \"referenceId\": \"<string>\",\n  \"simulate\": {\n    \"environment\": \"<string>\",\n    \"decisions\": {}\n  },\n  \"tax\": \"<float>\",\n  \"taxRate\": \"<float>\",\n  \"tradeIn\": {\n    \"amount\": \"<float>\",\n    \"make\": \"<string>\",\n    \"model\": \"<string>\",\n    \"payoff\": \"<float>\",\n    \"year\": \"<integer>\",\n    \"bookValue\": \"<float>\",\n    \"class\": \"<string>\",\n    \"condition\": \"<string>\",\n    \"leaseAnnualMiles\": \"<integer>\",\n    \"leaseMonthlyPayment\": \"<float>\",\n    \"leaseNumRemainingPayments\": \"<integer>\",\n    \"leasePenaltyPerExcessMile\": \"<float>\",\n    \"leaseTerm\": \"<integer>\",\n    \"mileage\": \"<integer>\",\n    \"ownership\": \"<string>\",\n    \"series\": \"<string>\",\n    \"style\": \"<string>\",\n    \"terminatingLease\": \"<boolean>\",\n    \"vin\": \"<string>\",\n    \"financeCompany\": {\n      \"name\": \"<string>\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "2ed658ee-3e36-4c91-a178-084559cc19c5",
+              "name": "Loan Application data",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "loan-application"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"city\": \"Madison\",\n      \"residenceTimeInMonths\": 16,\n      \"residenceType\": \"RENT\",\n      \"state\": \"WI\",\n      \"street\": \"1234 Main St\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\",\n      \"residenceMonthlyPayment\": 1500\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"ssn\": \"666554444\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"dob\": \"1990-01-30\",\n    \"previousAddress\": {\n      \"street\": \"8754 Pine St\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48204\",\n      \"residenceType\": \"RELATIVES\",\n      \"residenceTimeInMonths\": 12,\n      \"residenceMonthlyPayment\": 0\n    },\n    \"maritalStatus\": \"MARRIED\",\n    \"educationLevel\": \"HS_GRAD\",\n    \"previousEmployment\": {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": 10000,\n    \"otherIncome\": [\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      },\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      }\n    ],\n    \"creditScore\": 710\n  },\n  \"callbackUrl\": \"https://my-domain.com/customers/1/updateCreditApp\",\n  \"dealer\": {\n    \"code\": \"76KR\",\n    \"middleman\": \"<string>\",\n    \"middlemanId\": \"<string>\",\n    \"state\": \"<string>\"\n  },\n  \"offerPreferences\": {\n    \"downPayment\": 3000,\n    \"requestedOfferType\": \"FINANCE\",\n    \"term\": 24,\n    \"apr\": 0.02,\n    \"isSubvented\": \"<boolean>\",\n    \"annualMileage\": 10000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\"\n  },\n  \"vehicle\": {\n    \"age\": \"<string>\",\n    \"dealerRetailPrice\": 30995,\n    \"make\": \"FORD\",\n    \"model\": \"Mustang\",\n    \"vin\": \"1FATP8FFXJ5139341\",\n    \"year\": 2020,\n    \"bookoutValue\": 39895.27,\n    \"modelCode\": \"P8T\",\n    \"trim\": \"GT\",\n    \"bodyType\": \"Fastback\",\n    \"color\": \"blue\",\n    \"invoice\": 29850.75,\n    \"maintenanceCosts\": \"<object>\",\n    \"mileage\": 35684,\n    \"msrp\": 34950.65,\n    \"stockNumber\": \"FCL1425\",\n    \"photoUrl\": \"https://example.com/my/vehicle/photo.jpg\",\n    \"fuelType\": \"GASOLINE\"\n  },\n  \"cosigner\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"4390 Norris Ln\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48208\",\n      \"residenceType\": \"BUYING\",\n      \"residenceTimeInMonths\": 60,\n      \"residenceMonthlyPayment\": 2000\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"ssn\": \"666554444\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"dob\": \"1990-01-30\",\n    \"previousAddress\": {\n      \"street\": \"2198 Dorothy Tr\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48216\",\n      \"residenceType\": \"OTHER\",\n      \"residenceTimeInMonths\": 12,\n      \"residenceMonthlyPayment\": 0\n    },\n    \"maritalStatus\": \"MARRIED\",\n    \"educationLevel\": \"HS_GRAD\",\n    \"previousEmployment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": 10000,\n    \"otherIncome\": [\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      },\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      }\n    ],\n    \"relationship\": \"SPOUSE\",\n    \"relationshipCode\": \"SPOUSE\"\n  },\n  \"fees\": [\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"name\": \"VA Rebate\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\",\n      \"disclaimer\": \"Rebate Disclaimer\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    },\n    {\n      \"amount\": 2499.99,\n      \"name\": \"VA Rebate\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\",\n      \"disclaimer\": \"Rebate Disclaimer\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    }\n  ],\n  \"referenceId\": \"my-reference-id\",\n  \"simulate\": {\n    \"environment\": \"AUTOFI_TEST\",\n    \"decisions\": {}\n  },\n  \"tax\": 1745.25,\n  \"taxRate\": 0.07,\n  \"tradeIn\": {\n    \"amount\": 5000.75,\n    \"make\": \"FORD\",\n    \"model\": \"Mustang\",\n    \"payoff\": 3500.75,\n    \"year\": 2018,\n    \"bookValue\": \"<float>\",\n    \"class\": \"<string>\",\n    \"condition\": \"<string>\",\n    \"leaseAnnualMiles\": 15000,\n    \"leaseMonthlyPayment\": 350.45,\n    \"leaseNumRemainingPayments\": 6,\n    \"leasePenaltyPerExcessMile\": 1.5,\n    \"leaseTerm\": 24,\n    \"mileage\": 40000,\n    \"ownership\": \"<string>\",\n    \"series\": \"<string>\",\n    \"style\": \"<string>\",\n    \"terminatingLease\": \"<boolean>\",\n    \"vin\": \"1FATP8FFXJ5139341\",\n    \"financeCompany\": {\n      \"name\": \"FMCC\"\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"agentUrl\": \"https://example.com\",\n  \"customerProfile\": \"https://example.com\",\n  \"loanApplicationExpires\": \"2021-10-30T18:07:06.716Z\",\n  \"loanApplicationId\": \"string\",\n  \"referenceId\": \"string\",\n  \"url\": \"https://example.com\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9f3c4a1d-9322-4a53-b874-262ece5d5839",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "loan-application"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"city\": \"Madison\",\n      \"residenceTimeInMonths\": 16,\n      \"residenceType\": \"RENT\",\n      \"state\": \"WI\",\n      \"street\": \"1234 Main St\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\",\n      \"residenceMonthlyPayment\": 1500\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"ssn\": \"666554444\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"dob\": \"1990-01-30\",\n    \"previousAddress\": {\n      \"street\": \"8754 Pine St\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48204\",\n      \"residenceType\": \"RELATIVES\",\n      \"residenceTimeInMonths\": 12,\n      \"residenceMonthlyPayment\": 0\n    },\n    \"maritalStatus\": \"MARRIED\",\n    \"educationLevel\": \"HS_GRAD\",\n    \"previousEmployment\": {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": 10000,\n    \"otherIncome\": [\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      },\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      }\n    ],\n    \"creditScore\": 710\n  },\n  \"callbackUrl\": \"https://my-domain.com/customers/1/updateCreditApp\",\n  \"dealer\": {\n    \"code\": \"76KR\",\n    \"middleman\": \"<string>\",\n    \"middlemanId\": \"<string>\",\n    \"state\": \"<string>\"\n  },\n  \"offerPreferences\": {\n    \"downPayment\": 3000,\n    \"requestedOfferType\": \"FINANCE\",\n    \"term\": 24,\n    \"apr\": 0.02,\n    \"isSubvented\": \"<boolean>\",\n    \"annualMileage\": 10000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\"\n  },\n  \"vehicle\": {\n    \"age\": \"<string>\",\n    \"dealerRetailPrice\": 30995,\n    \"make\": \"FORD\",\n    \"model\": \"Mustang\",\n    \"vin\": \"1FATP8FFXJ5139341\",\n    \"year\": 2020,\n    \"bookoutValue\": 39895.27,\n    \"modelCode\": \"P8T\",\n    \"trim\": \"GT\",\n    \"bodyType\": \"Fastback\",\n    \"color\": \"blue\",\n    \"invoice\": 29850.75,\n    \"maintenanceCosts\": \"<object>\",\n    \"mileage\": 35684,\n    \"msrp\": 34950.65,\n    \"stockNumber\": \"FCL1425\",\n    \"photoUrl\": \"https://example.com/my/vehicle/photo.jpg\",\n    \"fuelType\": \"GASOLINE\"\n  },\n  \"cosigner\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"4390 Norris Ln\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48208\",\n      \"residenceType\": \"BUYING\",\n      \"residenceTimeInMonths\": 60,\n      \"residenceMonthlyPayment\": 2000\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"ssn\": \"666554444\",\n    \"employment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"dob\": \"1990-01-30\",\n    \"previousAddress\": {\n      \"street\": \"2198 Dorothy Tr\",\n      \"street2\": \"\",\n      \"city\": \"Detroit\",\n      \"state\": \"MI\",\n      \"zip\": \"48216\",\n      \"residenceType\": \"OTHER\",\n      \"residenceTimeInMonths\": 12,\n      \"residenceMonthlyPayment\": 0\n    },\n    \"maritalStatus\": \"MARRIED\",\n    \"educationLevel\": \"HS_GRAD\",\n    \"previousEmployment\": {\n      \"employmentStatus\": \"<string>\",\n      \"timeInMonths\": 1,\n      \"employerName\": \"<string>\",\n      \"jobTitle\": \"<string>\",\n      \"employerPhone\": \"5554443333\",\n      \"employerCity\": \"<string>\",\n      \"employerStreet\": \"<string>\",\n      \"employerStreet2\": \"<string>\",\n      \"employerState\": \"WI\",\n      \"employerZip\": \"12345\"\n    },\n    \"incomeReported\": \"<float>\",\n    \"employmentIncome\": 10000,\n    \"otherIncome\": [\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      },\n      {\n        \"amount\": 1,\n        \"source\": \"Social Security Benefits\"\n      }\n    ],\n    \"relationship\": \"SPOUSE\",\n    \"relationshipCode\": \"SPOUSE\"\n  },\n  \"fees\": [\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    },\n    {\n      \"value\": \"<Error: Could not resolve allOf schema\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"name\": \"VA Rebate\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\",\n      \"disclaimer\": \"Rebate Disclaimer\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    },\n    {\n      \"amount\": 2499.99,\n      \"name\": \"VA Rebate\",\n      \"isPrivateOffer\": false,\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\",\n      \"disclaimer\": \"Rebate Disclaimer\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    }\n  ],\n  \"referenceId\": \"my-reference-id\",\n  \"simulate\": {\n    \"environment\": \"AUTOFI_TEST\",\n    \"decisions\": {}\n  },\n  \"tax\": 1745.25,\n  \"taxRate\": 0.07,\n  \"tradeIn\": {\n    \"amount\": 5000.75,\n    \"make\": \"FORD\",\n    \"model\": \"Mustang\",\n    \"payoff\": 3500.75,\n    \"year\": 2018,\n    \"bookValue\": \"<float>\",\n    \"class\": \"<string>\",\n    \"condition\": \"<string>\",\n    \"leaseAnnualMiles\": 15000,\n    \"leaseMonthlyPayment\": 350.45,\n    \"leaseNumRemainingPayments\": 6,\n    \"leasePenaltyPerExcessMile\": 1.5,\n    \"leaseTerm\": 24,\n    \"mileage\": 40000,\n    \"ownership\": \"<string>\",\n    \"series\": \"<string>\",\n    \"style\": \"<string>\",\n    \"terminatingLease\": \"<boolean>\",\n    \"vin\": \"1FATP8FFXJ5139341\",\n    \"financeCompany\": {\n      \"name\": \"FMCC\"\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"errors\": [\n    {\n      \"description\": \"Field \\\"applicant.name.first\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.name.last\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.name.middle\\\" is invalid: String cannot represent a non string value: 11.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.street\\\" is invalid: Must be a non-empty string.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.street2\\\" is invalid: String cannot represent a non string value: 2.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.city\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.state\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.zip\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.residenceType\\\" is invalid: Value \\\"\\\" does not exist in \\\"AddressResidenceType\\\" enum.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.residenceTimeInMonths\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.address.residenceMonthlyPayment\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.street\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.city\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.zip\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.residenceType\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.residenceTimeInMonths\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousAddress.residenceMonthlyPayment\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.phone\\\" is invalid: Must be a valid 10 digit phone number.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.email\\\" is invalid: Email cannot represent an invalid email address value: invalid@mail@org.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.ssn\\\" is invalid: Must be a valid 9 digit social security number not beginning with \\\"9\\\".\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.employerName\\\" is invalid: String cannot represent a non string value: 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.jobTitle\\\" is invalid: String cannot represent a non string value: false.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.timeInMonths\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.employerPhone\\\" is invalid: Must be a valid 10 digit phone number.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.employerCity\\\" is invalid: String cannot represent a non string value: 11.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.employerZip\\\" is invalid: String cannot represent a non string value: 1010010.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employment.employmentStatus\\\" is invalid: Value \\\"\\\" does not exist in \\\"EmploymentStatus\\\" enum.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousEmployment.jobTitle\\\" is invalid: String cannot represent a non string value: 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousEmployment.timeInMonths\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousEmployment.employerCity\\\" is invalid: String cannot represent a non string value: 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousEmployment.employerZip\\\" is invalid: String cannot represent a non string value: false.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.previousEmployment.employmentStatus\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.dob\\\" is invalid: Date cannot represent non string type 1090.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.incomeReported\\\" is invalid: Float cannot represent non numeric value: \\\"\\\".\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.employmentIncome\\\" is invalid: Float cannot represent non numeric value: \\\"\\\".\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.otherIncome[0].amount\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.otherIncome[0].source\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.creditScore\\\" is invalid: Must be an integer between 300 and 999 (inclusive).\"\n    },\n    {\n      \"description\": \"Field \\\"callbackUrl\\\" is invalid: Must be a valid URL.\"\n    },\n    {\n      \"description\": \"Field \\\"dealer.code\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.annualMileage\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.downPayment\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.requestedOfferType\\\" is invalid: Value \\\"\\\" does not exist in \\\"RequestedOfferType\\\" enum.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.term\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Field \\\"products[0].name\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"products[0].price\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"products[0].category\\\" can not be null.\"\n    },\n    {\n      \"description\": \"Field \\\"products[0].tax\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].disclaimer\\\" is invalid: String cannot represent a non string value: -1.\"\n    },\n    {\n      \"description\": \"Too many errors processing variables, error limit reached. Execution aborted.\"\n    },\n    {\n      \"description\": \"Something went wrong: Dealer not found using code: AAAAA\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "007b4c9e-29b3-4855-a6c7-b6743e49610b",
+          "name": "Loan application details",
+          "request": {
+            "name": "Loan application details",
+            "description": {},
+            "url": {
+              "path": [
+                "v1",
+                "loan-application",
+                ":loanApplicationId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "loanApplicationId",
+                  "description": "(Required) The `loanApplicationId` in the response when the loan application was created."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "063be4fd-3b00-4976-9bec-103c6e54f6e9",
+              "name": "Loan Application data",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "loan-application",
+                    ":loanApplicationId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "loanApplicationId",
+                      "description": "(Required) The `loanApplicationId` in the response when the loan application was created."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"afExperienceCompleted\": false,\n  \"appliedFees\": [\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"Shipping fee.\"\n    },\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"Shipping fee.\"\n    }\n  ],\n  \"appliedTaxes\": [\n    {\n      \"amount\": 995.22,\n      \"name\": \"string\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    },\n    {\n      \"amount\": 995.22,\n      \"name\": \"string\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    }\n  ],\n  \"creditScore\": 748,\n  \"decisions\": [\n    {\n      \"comments\": {\n        \"raw\": [\n          \"APPROVED WITH COSIGNER\",\n          \"APPROVED WITH COSIGNER\"\n        ]\n      },\n      \"consumerState\": \"PENDING\",\n      \"error\": {\n        \"message\": \"Unable to locate bookout data.\"\n      },\n      \"isAccepted\": false,\n      \"lenderReferenceId\": \"string\",\n      \"middleman\": \"routeOne\",\n      \"middlemanReferenceID\": \"string\",\n      \"name\": \"string\",\n      \"pricing\": {\n        \"amountFinanced\": 2303.750478053976,\n        \"apr\": 2511.4111584525444,\n        \"buyRate\": 2409.4402138374116,\n        \"dealerDiscountFee\": 7589.879805180632,\n        \"downPayment\": 5095.92176423999,\n        \"monthlyPayment\": 6152.628968726666,\n        \"termMonths\": 9131\n      },\n      \"state\": \"CONDITIONAL\",\n      \"stipulations\": {\n        \"raw\": [\n          \"DOB MISMATCH ON BUREAU. PROOF OF DOB REQUIRED; DL OR OTHER GOVERNMENT ISSUED ID WITH PHOTO AND DOBS\",\n          \"DOB MISMATCH ON BUREAU. PROOF OF DOB REQUIRED; DL OR OTHER GOVERNMENT ISSUED ID WITH PHOTO AND DOBS\"\n        ],\n        \"normalized\": [\n          \"Applicant will need to show a valid government issued photo ID card for date of birth verification\",\n          \"Applicant will need to show a valid government issued photo ID card for date of birth verification\"\n        ]\n      }\n    },\n    {\n      \"comments\": {\n        \"raw\": [\n          \"APPROVED WITH COSIGNER\",\n          \"APPROVED WITH COSIGNER\"\n        ]\n      },\n      \"consumerState\": \"PENDING\",\n      \"error\": {\n        \"message\": \"Unable to locate bookout data.\"\n      },\n      \"isAccepted\": false,\n      \"lenderReferenceId\": \"string\",\n      \"middleman\": \"dealertrackFs\",\n      \"middlemanReferenceID\": \"string\",\n      \"name\": \"string\",\n      \"pricing\": {\n        \"amountFinanced\": 8881.870101266206,\n        \"apr\": 4830.21471931779,\n        \"buyRate\": 9886.02958323269,\n        \"dealerDiscountFee\": 5534.4582764060615,\n        \"downPayment\": 8527.968696698457,\n        \"monthlyPayment\": 800.0133224643114,\n        \"termMonths\": 7483\n      },\n      \"state\": \"APPROVED\",\n      \"stipulations\": {\n        \"raw\": [\n          \"DOB MISMATCH ON BUREAU. PROOF OF DOB REQUIRED; DL OR OTHER GOVERNMENT ISSUED ID WITH PHOTO AND DOBS\",\n          \"DOB MISMATCH ON BUREAU. PROOF OF DOB REQUIRED; DL OR OTHER GOVERNMENT ISSUED ID WITH PHOTO AND DOBS\"\n        ],\n        \"normalized\": [\n          \"Applicant will need to show a valid government issued photo ID card for date of birth verification\",\n          \"Applicant will need to show a valid government issued photo ID card for date of birth verification\"\n        ]\n      }\n    }\n  ],\n  \"loanApplicationId\": \"string\",\n  \"offerAvailable\": false,\n  \"offerPreferences\": {\n    \"annualMileage\": 1,\n    \"apr\": 8315.002692129401,\n    \"downPayment\": 1,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": true,\n    \"requestedOfferType\": \"FINANCE\",\n    \"term\": 1\n  },\n  \"pricingStack\": {\n    \"value\": \"<Error: Could not resolve allOf schema\"\n  },\n  \"referenceId\": \"string\",\n  \"selectedProducts\": [\n    {\n      \"monthlyPayment\": 1,\n      \"mileage\": 1,\n      \"name\": \"string\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 1,\n      \"total\": 1\n    },\n    {\n      \"monthlyPayment\": 1,\n      \"mileage\": 1,\n      \"name\": \"string\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 1,\n      \"total\": 1\n    }\n  ],\n  \"state\": \"FI_COMPLETED\",\n  \"tradeIn\": {\n    \"amount\": 5000.75,\n    \"bookValue\": 7723.433919885233,\n    \"class\": \"string\",\n    \"condition\": \"<string>\",\n    \"financeCompany\": {\n      \"name\": \"FMCC\"\n    },\n    \"isApplied\": true,\n    \"leaseAnnualMiles\": 15000,\n    \"leaseMonthlyPayment\": 350.45,\n    \"leaseNumRemainingPayments\": 6,\n    \"leasePenaltyPerExcessMile\": 1.5,\n    \"leaseTerm\": 24,\n    \"make\": \"FORD\",\n    \"mileage\": 40000,\n    \"model\": \"Mustang\",\n    \"ownership\": \"string\",\n    \"payoff\": 3500.75,\n    \"series\": \"string\",\n    \"style\": \"string\",\n    \"terminatingLease\": false,\n    \"vin\": \"1FATP8FFXJ5139341\",\n    \"year\": 2018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ff8d0e4e-ba58-4a85-8f2d-d731d715c530",
+          "name": "External resources (experimental)",
+          "request": {
+            "name": "External resources (experimental)",
+            "description": {
+              "content": "Collection of resources in external systems that are associated with the loan application. External resources are updated with information about the deal during the loan application process. After the external system has been updated, external resources are available in the response, grouped by the external system type and then by the provider of each system. Currently Dealer Management Systems (DMS) are the only available external system type and the only provider is for the CDK DMS. <strong>This endpoint is still `experimental` and can change in the future.</strong>\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "loan-application",
+                ":loanApplicationId",
+                "externalResources"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "loanApplicationId",
+                  "description": "(Required) The `loanApplicationId` in the response when the loan application was created."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "851dc3c0-558c-4bd7-ab18-4793de11a853",
+              "name": "Resources grouped by external system type.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "loan-application",
+                    ":loanApplicationId",
+                    "externalResources"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "loanApplicationId",
+                      "description": "(Required) The `loanApplicationId` in the response when the loan application was created."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"dms\": {\n    \"cdk\": {\n      \"customer\": {\n        \"id\": \"18185\"\n      },\n      \"deal\": {\n        \"id\": \"50512\"\n      },\n      \"dealer\": {\n        \"id\": \"3PADEVWB\"\n      }\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "f1c45f8b-c11e-4ccb-8e74-ed9c177cda09",
+      "name": "Dealers",
+      "description": {
+        "content": "A `dealer` is a required entity when requesting to create a loan application. If the dealer does not exist you need to first create the `dealer` to acquire the unique `dealer code` from AutoFi.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "ffeb9067-f7a8-46ce-aa35-bf4bee925fa1",
+          "name": "Lookup AutoFi dealers",
+          "request": {
+            "name": "Lookup AutoFi dealers",
+            "description": {},
+            "url": {
+              "path": [
+                "v1",
+                "dealer",
+                "lookup"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"<string>\",\n  \"oemSalesCodes\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "24e080c1-014c-4591-9cc0-898d8065c7b0",
+              "name": "Dealer lookup successfully executed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealer",
+                    "lookup"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"brand\": \"<string>\",\n  \"oemSalesCodes\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"brand\": \"string\",\n  \"dealers\": [\n    {\n      \"code\": \"string\",\n      \"name\": \"string\",\n      \"oemSalesCode\": \"string\"\n    },\n    {\n      \"code\": \"string\",\n      \"name\": \"string\",\n      \"oemSalesCode\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0a18060b-48b4-429f-acc7-1a32ab511f08",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealer",
+                    "lookup"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"brand\": \"<string>\",\n  \"oemSalesCodes\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 400,\n  \"message\": \"Validation Error\",\n  \"errors\": [\n    {\n      \"description\": \"The brand was not found: RANDOM CARS INCORPORATED.\"\n    },\n    {\n      \"description\": \"Field \\\"\\\" is invalid: String cannot represent a non string value: 1.\"\n    },\n    {\n      \"description\": \"Variable \\\"$brand\\\" of required type \\\"String!\\\" was not provided.\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "6c011464-30a6-47b7-836f-b4b3f361dc7a",
+      "name": "Dealmaker",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "a5d51200-c845-4391-84b0-da9b25f8a745",
+          "name": "Create Dealmaker",
+          "request": {
+            "name": "Create Dealmaker",
+            "description": {
+              "content": "<p style=\"display: flex; flex-direction: column\"><img \nsrc=\"http://badges.github.io/stability-badges/dist/experimental.svg\" alt=\"Experimental\" \nstyle=\"width: 100%; max-width: 150px\" />\nCreate a new Dealmaker loan application.\n</p>",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "dealmaker"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicant\": {\n    \"email\": \"<email>\",\n    \"name\": {\n      \"first\": \"<string>\",\n      \"last\": \"<string>\"\n    },\n    \"phone\": \"<string>\"\n  },\n  \"dealer\": {\n    \"code\": \"<string>\",\n    \"channel\": \"<string>\"\n  },\n  \"referenceId\": \"<string>\",\n  \"vehicle\": {\n    \"vin\": \"<string>\",\n    \"photoUrl\": \"<url>\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7a2b67cb-51bf-4f0c-9395-e54adf33402c",
+              "name": "Dealmaker loan application created successfully.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"referenceId\": \"my-reference-id\",\n  \"url\": \"https://example.com\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "588bd12e-9bb0-4254-b18c-413b9fbb3af5",
+              "name": "Bad Request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"code\": 400,\n    \"message\": \"Bad Request\",\n    \"errors\": [\n      {\n        \"description\": \"Field \\\"applicant.name.first\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.name.last\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.phone\\\" is invalid: Must be a valid 10 digit phone number.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.email\\\" is invalid: Email cannot represent an invalid email address value: invalid@mail@org.\"\n      },\n      {\n        \"description\": \"Field \\\"dealer.code\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Dealer not found using code: AAAAA\"\n      },\n      {\n        \"description\": \"Vehicle not found using dealer code: ABCD and vin: MAJ6S3JL9MC396799\"\n      }\n    ]\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "38882311-3c21-45b4-8152-aaedffe58931",
+              "name": "Dealmaker Exists",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"code\": 409,\n    \"message\": \"Dealmaker already exists for referenceId: my-reference-id\",\n    \"referenceId\": \"my-reference-id\",\n    \"url\": \"https://example.com\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e81cbf4a-cec4-49aa-b5c0-e9f46a967619",
+          "name": "Create Credit App",
+          "request": {
+            "name": "Create Credit App",
+            "description": {
+              "content": "<p style=\"display: flex; flex-direction: column\"><img \nsrc=\"http://badges.github.io/stability-badges/dist/experimental.svg\" alt=\"Experimental\" \nstyle=\"width: 100%; max-width: 150px\" />\nCreate a new Dealmaker loan application that starts at the credit application. Use this endpoint when the\nconsumer has already selected a vehicle and is ready to apply for credit.\n<em>NOTE: Only retail finance is currently supported. This is experimental and can change in the future.</em>\n</p>",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "dealmaker",
+                "credit-application"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicant\": {\n    \"email\": \"<email>\",\n    \"name\": {\n      \"first\": \"<string>\",\n      \"last\": \"<string>\",\n      \"middle\": \"<string>\",\n      \"suffix\": \"<string>\"\n    },\n    \"address\": {\n      \"street\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"city\": \"<string>\",\n      \"state\": \"<string>\",\n      \"zip\": \"<string>\"\n    },\n    \"phone\": \"<string>\"\n  },\n  \"dealer\": {\n    \"code\": \"<string>\"\n  },\n  \"offerPreferences\": {\n    \"downPayment\": \"<integer>\",\n    \"term\": \"<integer>\",\n    \"apr\": \"<float>\",\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"pricePlan\": \"<string>\"\n  },\n  \"referenceId\": \"<string>\",\n  \"vehicle\": {\n    \"age\": \"<string>\",\n    \"dealerRetailPrice\": \"<integer>\",\n    \"invoice\": \"<float>\",\n    \"make\": \"<string>\",\n    \"model\": \"<string>\",\n    \"modelCode\": \"<string>\",\n    \"msrp\": \"<float>\",\n    \"trim\": \"<string>\",\n    \"vin\": \"<string>\",\n    \"year\": \"<integer>\",\n    \"bodyType\": \"<string>\",\n    \"color\": \"<string>\",\n    \"fuelType\": \"ELECTRIC\",\n    \"mileage\": \"<integer>\",\n    \"photoUrl\": \"<url>\",\n    \"stockNumber\": \"<string>\"\n  },\n  \"callbackUrl\": \"<uri>\",\n  \"fees\": [\n    {\n      \"amount\": \"<float>\",\n      \"code\": \"<string>\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"amount\": \"<float>\",\n      \"code\": \"<string>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"tax\": \"<float>\",\n      \"referenceId\": \"<string>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    },\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"tax\": \"<float>\",\n      \"referenceId\": \"<string>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    },\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    }\n  ],\n  \"nonOemRebates\": [\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"name\": \"<string>\",\n      \"isPrivateOffer\": false,\n      \"taxRule\": null,\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    },\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"name\": \"<string>\",\n      \"isPrivateOffer\": false,\n      \"taxRule\": null,\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false\n    }\n  ],\n  \"simulate\": {\n    \"environment\": \"<string>\",\n    \"decisions\": {}\n  },\n  \"tax\": {\n    \"total\": \"<float>\"\n  },\n  \"tradeIn\": {\n    \"amount\": \"<float>\",\n    \"make\": \"<string>\",\n    \"model\": \"<string>\",\n    \"ownership\": \"<string>\",\n    \"payoff\": \"<float>\",\n    \"year\": \"<integer>\",\n    \"condition\": \"<string>\",\n    \"mileage\": \"<integer>\",\n    \"series\": \"<string>\",\n    \"style\": \"<string>\",\n    \"vin\": \"<string>\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "62a2fbc6-2c98-43fe-83d7-0d6b2d89a174",
+              "name": "Dealmaker credit application created successfully.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker",
+                    "credit-application"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"expiresAt\": \"1997-04-29T14:29:41.403Z\",\n  \"loanApplicationId\": \"string\",\n  \"referenceId\": \"my-reference-id\",\n  \"url\": \"https://example.com\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6dc453d9-eac0-470b-b80a-4100ab798bf8",
+              "name": "Bad Request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker",
+                    "credit-application"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"code\": 400,\n    \"message\": \"Bad Request\",\n    \"errors\": [\n      {\n        \"description\": \"Field \\\"applicant.name.first\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.name.last\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.phone\\\" is invalid: Must be a valid 10 digit phone number.\"\n      },\n      {\n        \"description\": \"Field \\\"applicant.email\\\" is invalid: Email cannot represent an invalid email address value: invalid@mail@org.\"\n      },\n      {\n        \"description\": \"Field \\\"dealer.code\\\" can not be null.\"\n      },\n      {\n        \"description\": \"Dealer not found using code: AAAAA\"\n      },\n      {\n        \"description\": \"Vehicle not found using dealer code: ABCD and vin: MAJ6S3JL9MC396799\"\n      }\n    ]\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "663397a0-7449-4f7c-9f9a-a02d50a56dab",
+              "name": "Dealmaker Credit Application Exists",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "dealmaker",
+                    "credit-application"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 409,\n  \"creditApp\": {\n    \"expiresAt\": \"1988-04-19T21:17:58.390Z\",\n    \"loanApplicationId\": \"string\",\n    \"referenceId\": \"my-reference-id\",\n    \"url\": \"https://example.com\"\n  },\n  \"message\": \"Dealmaker already exists for referenceId: my-reference-id\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "60354fc6-b23e-42e0-940f-d4262cdf69cb",
+      "name": "Calculate Payment",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "7b4814ec-2764-4314-abba-5183247e8927",
+          "name": "Cash",
+          "request": {
+            "name": "Cash",
+            "description": {
+              "content": "Use this endpoint to calculate estimated payments for a `cash` car deal.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "estimate",
+                "cash"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dealer\": {\n    \"code\": \"<string>\"\n  },\n  \"vehicle\": {\n    \"vin\": \"<string>\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"<string>\",\n      \"street\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"city\": \"<string>\",\n      \"state\": \"<string>\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    },\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    },\n    {\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": \"<float>\",\n    \"payoff\": \"<float>\",\n    \"ownership\": \"OWNED\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "f826ccf2-8ad3-4e5c-a443-80a8fd2d39a2",
+              "name": "Payments successfully calculated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "cash"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"pricingStack\": {\n    \"totalDue\": 34202.76,\n    \"totalFees\": 249.99,\n    \"totalProducts\": 760.01,\n    \"totalRebates\": 2666,\n    \"totalTaxes\": 6513.67,\n    \"tradeInAmount\": 9100\n  },\n  \"appliedTaxes\": [\n    {\n      \"amount\": 4015.54,\n      \"code\": \"OTHER\",\n      \"name\": \"Total Taxes\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    },\n    {\n      \"amount\": 4015.54,\n      \"code\": \"OTHER\",\n      \"name\": \"Total Taxes\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    }\n  ],\n  \"appliedFees\": [\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"appliedRebates\": [\n    {\n      \"type\": \"CASH\",\n      \"expiryDate\": \"2025-01-16\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"type\": \"CASH\",\n      \"expiryDate\": \"1960-02-25\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"selectedProducts\": [\n    {\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"mileage\": 1,\n      \"name\": \"string\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"termMonths\": 1,\n      \"total\": 1\n    },\n    {\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"mileage\": 1,\n      \"name\": \"string\",\n      \"price\": 100,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"termMonths\": 1,\n      \"total\": 1\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fc82600a-7389-4b86-857a-0efdba83d0ec",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "cash"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 400,\n  \"message\": \"Bad Request\",\n  \"errors\": [\n    {\n      \"description\": \"Field \\\"vehicle.vin\\\" is invalid: Must be 17 alphanumeric characters.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.vin\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.msrp\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.invoice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.year\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.model\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.make\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.dealerRetailPrice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"NEW\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"USED\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"CPO\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.dealerRetailPrice\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.year\\\" is invalid: Must be 4 digit integer between 1900 and 2024.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"CASH\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"FINANCE_RATE\\\" or \\\"LEASE_RATE\\\"?.\"\n    },\n    {\n      \"description\": \"Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"DOC_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"OTHER\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"SHIPPING_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TIRE_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TITLE_REG\\\"?.\"\n    },\n    {\n      \"description\": \"Required field \\\"fees[0].name\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].amount\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too high, must be lower than 850.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too low, must be greater than 300.\"\n    },\n    {\n      \"description\": \"Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799\"\n    },\n    {\n      \"description\": \"Could not get offers for this vehicle: MAJ6S3JL9MC396793\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8aa3db7c-6a84-4d5a-8d45-1aea6c0856d3",
+          "name": "Finance",
+          "request": {
+            "name": "Finance",
+            "description": {
+              "content": "Use this endpoint to calculate estimated payments for a `finance` car deal.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "estimate",
+                "finance"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dealer\": {\n    \"code\": \"<string>\"\n  },\n  \"vehicle\": {\n    \"vin\": \"<string>\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"<string>\",\n      \"street\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"city\": \"<string>\",\n      \"state\": \"<string>\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"offerPreferences\": {\n    \"pricePlan\": \"<string>\",\n    \"apr\": \"<float>\",\n    \"downPayment\": \"<integer>\",\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"term\": \"<integer>\"\n  },\n  \"products\": [\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    },\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    }\n  ],\n  \"rebates\": [\n    {\n      \"type\": \"<string>\",\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    },\n    {\n      \"type\": \"<string>\",\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    }\n  ],\n  \"nonOemRebates\": [\n    {\n      \"isPrivateOffer\": false,\n      \"taxRule\": null,\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\"\n    },\n    {\n      \"isPrivateOffer\": false,\n      \"taxRule\": null,\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": \"<float>\",\n    \"payoff\": \"<float>\",\n    \"ownership\": \"OWNED\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "254134c0-c077-425b-a235-79cf3ce149d5",
+              "name": "Payments successfully calculated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "finance"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"offerPreferences\": {\n    \"pricePlan\": \"Z\",\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"term\": 60\n  },\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": true,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\"\n    }\n  ],\n  \"nonOemRebates\": [\n    {\n      \"amount\": 7500,\n      \"disclaimer\": \"Only applicable at time of purchase for registered dealers.\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"Federal EV Tax Credit\",\n      \"taxRule\": \"DEDUCT_AFTER_TAX\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"offerPreferences\": {\n    \"pricePlan\": \"Z\",\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"term\": 60\n  },\n  \"pricingStack\": {\n    \"value\": \"<Error: Could not resolve allOf schema\"\n  },\n  \"appliedTaxes\": [\n    {\n      \"amount\": 4015.54,\n      \"code\": \"OTHER\",\n      \"name\": \"Total Taxes\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    },\n    {\n      \"amount\": 4015.54,\n      \"code\": \"OTHER\",\n      \"name\": \"Total Taxes\",\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ]\n    }\n  ],\n  \"appliedFees\": [\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"code\": \"SHIPPING_FEE\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"appliedRebates\": [\n    {\n      \"type\": \"CASH\",\n      \"expiryDate\": \"1982-10-19\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"type\": \"CASH\",\n      \"expiryDate\": \"1949-09-30\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"appliedNonOemRebates\": [\n    {\n      \"amount\": 7500,\n      \"disclaimer\": \"Only applicable at time of purchase for registered dealers.\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"Federal EV Tax Credit\",\n      \"taxRule\": \"DEDUCT_AFTER_TAX\"\n    }\n  ],\n  \"selectedProducts\": [\n    {\n      \"price\": 100,\n      \"name\": \"Extended Warranty\",\n      \"mileage\": 12000,\n      \"monthlyPayment\": 25.6,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 12,\n      \"total\": 115.5\n    },\n    {\n      \"price\": 100,\n      \"name\": \"Extended Warranty\",\n      \"mileage\": 12000,\n      \"monthlyPayment\": 25.6,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 12,\n      \"total\": 115.5\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "111a8a5e-8ad0-4eaa-a8cc-79293308cd50",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "finance"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"isTaxable\": \"<boolean>\"\n    }\n  ],\n  \"offerPreferences\": {\n    \"pricePlan\": \"Z\",\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"term\": 60\n  },\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": true,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\",\n      \"type\": \"CASH\"\n    }\n  ],\n  \"nonOemRebates\": [\n    {\n      \"amount\": 7500,\n      \"disclaimer\": \"Only applicable at time of purchase for registered dealers.\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"Federal EV Tax Credit\",\n      \"taxRule\": \"DEDUCT_AFTER_TAX\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 400,\n  \"message\": \"Bad Request\",\n  \"errors\": [\n    {\n      \"description\": \"Field \\\"offerPreferences.downPayment\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LARGEST_REBATE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LOWEST_MONTHLY\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LOWEST_APR\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Value \\\"NOT_AN_INCENTIVE_OPTION_VALUE\\\" does not exist in \\\"IncentiveOption\\\" enum.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.vin\\\" is invalid: Must be 17 alphanumeric characters.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.vin\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.msrp\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.invoice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.year\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.model\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.make\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.dealerRetailPrice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"NEW\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"USED\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"CPO\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.dealerRetailPrice\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.year\\\" is invalid: Must be 4 digit integer between 1900 and 2024.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"CASH\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"FINANCE_RATE\\\" or \\\"LEASE_RATE\\\"?.\"\n    },\n    {\n      \"description\": \"Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"DOC_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"OTHER\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"SHIPPING_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TIRE_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TITLE_REG\\\"?.\"\n    },\n    {\n      \"description\": \"Required field \\\"fees[0].name\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].amount\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too high, must be lower than 850.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too low, must be greater than 300.\"\n    },\n    {\n      \"description\": \"Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799\"\n    },\n    {\n      \"description\": \"Could not get offers for this vehicle: MAJ6S3JL9MC396793\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "76715f52-c261-4449-981d-2803d7d60efb",
+          "name": "Lease",
+          "request": {
+            "name": "Lease",
+            "description": {
+              "content": "Use this endpoint to calculate estimated payments for a `lease` car deal.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "estimate",
+                "lease"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dealer\": {\n    \"code\": \"<string>\"\n  },\n  \"vehicle\": {\n    \"vin\": \"<string>\"\n  },\n  \"offerPreferences\": {\n    \"annualMileage\": \"<integer>\",\n    \"apr\": \"<float>\",\n    \"downPayment\": \"<integer>\",\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"isSubvented\": \"<boolean>\",\n    \"term\": \"<integer>\"\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"<string>\",\n      \"street\": \"<string>\",\n      \"street2\": \"<string>\",\n      \"city\": \"<string>\",\n      \"state\": \"<string>\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"feePlacement\": \"<string>\"\n    },\n    {\n      \"amount\": \"<float>\",\n      \"name\": \"<string>\",\n      \"code\": \"<string>\",\n      \"feePlacement\": \"<string>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    },\n    {\n      \"category\": \"<string>\",\n      \"name\": \"<string>\",\n      \"price\": \"<float>\",\n      \"isTaxable\": false,\n      \"tax\": \"<float>\",\n      \"termMiles\": \"<integer>\",\n      \"termMonths\": \"<integer>\"\n    }\n  ],\n  \"rebates\": [\n    {\n      \"type\": \"<string>\",\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    },\n    {\n      \"type\": \"<string>\",\n      \"amount\": \"<float>\",\n      \"disclaimer\": \"<string>\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"<string>\",\n      \"programId\": \"<string>\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": \"<float>\",\n    \"payoff\": \"<float>\",\n    \"ownership\": \"OWNED\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "6be73495-67f1-4853-8647-b6a39767b7bf",
+              "name": "Payments successfully calculated",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "lease"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"offerPreferences\": {\n    \"isSubvented\": true,\n    \"annualMileage\": 12000,\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"term\": 36\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"offerPreferences\": {\n    \"isSubvented\": true,\n    \"annualMileage\": 12000,\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"term\": 36\n  },\n  \"pricingStack\": {\n    \"annualMileage\": 12000,\n    \"appliedToCap\": {\n      \"downPayment\": 1513.4,\n      \"rebates\": 750,\n      \"tradeIn\": 9100\n    },\n    \"appliedToSigning\": {\n      \"downPayment\": 486.6,\n      \"rebates\": 0,\n      \"tradeIn\": 0\n    },\n    \"moneyFactor\": 0.0008333333333333334,\n    \"leaseCharge\": 1740.98,\n    \"grossCap\": 45365.49,\n    \"capReduction\": 11363.4,\n    \"cashAppliedToCap\": 1513.4,\n    \"depreciation\": 9702.09,\n    \"netCap\": 34002.09,\n    \"residualPercentage\": 0.54,\n    \"residualValue\": 24300,\n    \"leaseTaxItems\": {\n      \"capitalized\": [],\n      \"dueAtSigning\": [\n        {\n          \"amount\": 151.26,\n          \"description\": \"Capitalized Cost Reduction Tax\"\n        }\n      ],\n      \"biweekly\": [\n        {\n          \"amount\": 8.07,\n          \"description\": \"Sales/Use Tax\"\n        }\n      ],\n      \"monthly\": [\n        {\n          \"amount\": 17.48,\n          \"description\": \"Sales/Use Tax\"\n        }\n      ]\n    },\n    \"taxRate\": 0.055,\n    \"totalCapitalizedFees\": 249.99,\n    \"totalDueAtSigning\": 2000,\n    \"totalSigningFees\": 0,\n    \"amountFinanced\": null,\n    \"apr\": 0.02,\n    \"buyRate\": 0.0275,\n    \"monthlyPayment\": 335.34,\n    \"numberOfPayments\": 35,\n    \"termMonths\": 36,\n    \"totalOfPayments\": 13736.9,\n    \"totalRebates\": 750,\n    \"totalProducts\": 115.5,\n    \"tradeInAmount\": 9100\n  },\n  \"appliedRebates\": [\n    {\n      \"expiryDate\": \"2001-01-15\",\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"expiryDate\": \"1956-12-07\",\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"appliedFees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    }\n  ],\n  \"selectedProducts\": [\n    {\n      \"price\": 100,\n      \"name\": \"Extended Warranty\",\n      \"mileage\": 12000,\n      \"monthlyPayment\": 25.6,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 12,\n      \"total\": 115.5\n    },\n    {\n      \"price\": 100,\n      \"name\": \"Extended Warranty\",\n      \"mileage\": 12000,\n      \"monthlyPayment\": 25.6,\n      \"referenceId\": \"23b605f6-2a9e-11ec-8d3d-0242ac130003\",\n      \"tax\": 15.5,\n      \"taxableAmount\": 34317.99,\n      \"taxLineItems\": [\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        },\n        {\n          \"jurisdiction\": {\n            \"type\": \"STATE\",\n            \"name\": \"COLORADO\",\n            \"imposition\": \"General Sales and Use Tax\"\n          },\n          \"tax\": {\n            \"rate\": 0.029,\n            \"amount\": 995.22\n          }\n        }\n      ],\n      \"termMonths\": 12,\n      \"total\": 115.5\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ddf321d7-4dbb-4ec3-9001-618fc7db41b1",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "estimate",
+                    "lease"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dealer\": {\n    \"code\": \"76KR\"\n  },\n  \"vehicle\": {\n    \"vin\": \"1FATP8FFXJ5139341\"\n  },\n  \"offerPreferences\": {\n    \"isSubvented\": true,\n    \"annualMileage\": 12000,\n    \"apr\": 0.02,\n    \"downPayment\": 2000,\n    \"incentiveOption\": \"LOWEST_MONTHLY\",\n    \"term\": 36\n  },\n  \"applicant\": {\n    \"address\": {\n      \"zip\": \"53714\",\n      \"street\": \"1234 Main St\",\n      \"street2\": \"Apt B\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\"\n    },\n    \"selfReportedCreditScore\": \"<integer>\"\n  },\n  \"fees\": [\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    },\n    {\n      \"amount\": 249.99,\n      \"name\": \"<string>\",\n      \"code\": \"SHIPPING_FEE\",\n      \"feePlacement\": \"<string>\"\n    }\n  ],\n  \"products\": [\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    },\n    {\n      \"category\": \"VSC\",\n      \"name\": \"Extended Warranty\",\n      \"price\": 100,\n      \"isTaxable\": true,\n      \"tax\": 15.5,\n      \"termMiles\": 100000,\n      \"termMonths\": 60\n    }\n  ],\n  \"rebates\": [\n    {\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    },\n    {\n      \"type\": \"CASH\",\n      \"amount\": 2499.99,\n      \"disclaimer\": \"Veterans only Rebate\",\n      \"isDiscount\": false,\n      \"isPrivateOffer\": false,\n      \"isQualifiedOffer\": false,\n      \"name\": \"VA Rebate\",\n      \"programId\": \"VA_1234\"\n    }\n  ],\n  \"tradeIn\": {\n    \"amount\": 9100,\n    \"payoff\": 5500,\n    \"ownership\": \"OWNED\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 400,\n  \"message\": \"Bad Request\",\n  \"errors\": [\n    {\n      \"description\": \"Field annualMileage is required when requestedOfferType is LEASE.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.annualMileage\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Could not get offers with provided mileage. Did you mean to provide an annualMileage from one of the following available mileages? [7500,10500,12000,13500,15000,16500,18000,19500]\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.downPayment\\\" is invalid: Must be an integer greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LARGEST_REBATE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LOWEST_MONTHLY\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Did you mean the enum value \\\"LOWEST_APR\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"offerPreferences.incentiveOption\\\" is invalid: Value \\\"NOT_AN_INCENTIVE_OPTION_VALUE\\\" does not exist in \\\"IncentiveOption\\\" enum.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.vin\\\" is invalid: Must be 17 alphanumeric characters.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.vin\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.msrp\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.invoice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.year\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.model\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.make\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Required field \\\"vehicle.dealerRetailPrice\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"NEW\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"USED\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.age\\\" is invalid: Did you mean the enum value \\\"CPO\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.dealerRetailPrice\\\" is invalid: Must be an integer greater than 0.\"\n    },\n    {\n      \"description\": \"Field \\\"vehicle.year\\\" is invalid: Must be 4 digit integer between 1900 and 2024.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"CASH\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"rebates[0].type\\\" is invalid: Did you mean the enum value \\\"FINANCE_RATE\\\" or \\\"LEASE_RATE\\\"?.\"\n    },\n    {\n      \"description\": \"Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"DOC_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"OTHER\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"SHIPPING_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TIRE_FEE\\\"?.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].code\\\" is invalid: Did you mean the enum value \\\"TITLE_REG\\\"?.\"\n    },\n    {\n      \"description\": \"Required field \\\"fees[0].name\\\" was not provided.\"\n    },\n    {\n      \"description\": \"Field \\\"fees[0].amount\\\" is invalid: Must be a float greater than or equal to 0.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too high, must be lower than 850.\"\n    },\n    {\n      \"description\": \"Field \\\"applicant.selfReportedCreditScore\\\" is invalid: score is too low, must be greater than 300.\"\n    },\n    {\n      \"description\": \"Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799\"\n    },\n    {\n      \"description\": \"Could not get offers for this vehicle: MAJ6S3JL9MC396793\"\n    },\n    {\n      \"description\": \"Dealer not found using code: RFTD\"\n    },\n    {\n      \"description\": \"Dealer is not enabled with code: RFTD\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "cfaf3a9c-d969-49db-9cb9-cd67ea8b9e18",
+      "name": "Prequalification",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "898dece3-a329-4a31-930b-92e33cbd0030",
+          "name": "Prequalification",
+          "request": {
+            "name": "Prequalification",
+            "description": {
+              "content": "Prequalification can be utilized to help identify how much the user can afford. \nThis endpoint provides the maximum monthly payment, maximum loan amount, and a credit score range.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "prequalification"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"<string>\",\n      \"last\": \"<string>\",\n      \"middle\": \"<string>\",\n      \"suffix\": \"<string>\"\n    },\n    \"address\": {\n      \"street\": \"<string>\",\n      \"city\": \"<string>\",\n      \"state\": \"<string>\",\n      \"zip\": \"<string>\",\n      \"street2\": \"<string>\"\n    },\n    \"phone\": \"<string>\",\n    \"email\": \"<email>\",\n    \"employmentIncome\": \"<float>\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "fef9125b-e154-464b-bacc-63d5d67e06f3",
+              "name": "Prequalification successfully calculated.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "prequalification"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"1234 Main St\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\"\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"employmentIncome\": 10000\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"prequalification\": {\n    \"maxLoanAmount\": 7256.584676317101,\n    \"maxMonthlyPayment\": 174.72632014382205,\n    \"ficoRange\": {\n      \"top\": 6242,\n      \"bottom\": 2865\n    },\n    \"creditScoreRange\": {\n      \"top\": 6316,\n      \"bottom\": 3857\n    }\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9b5ea893-5557-45f7-ad73-3a2d4a77248e",
+              "name": "BadRequest",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "prequalification"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"1234 Main St\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\"\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"employmentIncome\": 10000\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 1277,\n  \"message\": \"string\",\n  \"errors\": [\n    {\n      \"description\": \"string\"\n    },\n    {\n      \"description\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f2faa569-44df-42a1-9992-8bec2ace3e10",
+              "name": "NotFound",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "prequalification"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"1234 Main St\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\"\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"employmentIncome\": 10000\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 1342,\n  \"message\": \"string\",\n  \"errors\": [\n    {\n      \"description\": \"string\"\n    },\n    {\n      \"description\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e174abc3-8988-4b4f-bff5-fe5ac125b47d",
+              "name": "Service Unavailable",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "prequalification"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"applicant\": {\n    \"name\": {\n      \"first\": \"Mrs. Jamie-Lynn\",\n      \"last\": \"O'Rourke-Van Winkle\",\n      \"middle\": \"Alejandra\",\n      \"suffix\": \"JR\"\n    },\n    \"address\": {\n      \"street\": \"1234 Main St\",\n      \"city\": \"Madison\",\n      \"state\": \"WI\",\n      \"zip\": \"53714\",\n      \"street2\": \"Apt B\"\n    },\n    \"phone\": \"5554443333\",\n    \"email\": \"fake@example.com\",\n    \"employmentIncome\": 10000\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"code\": 1393,\n  \"message\": \"string\",\n  \"errors\": [\n    {\n      \"description\": \"string\"\n    },\n    {\n      \"description\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.autofi.com",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "8b5bedbb-f1bf-4a99-906a-6459725595eb",
+    "name": "AutoFi API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "\n# Introduction\n Welcome to the AutoFi REST API. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.\n\n# HTTP Requests\n### Environments\nEnvironment | URL\n----------------|-------------\nTest Sandbox | https://api-uat.autofi.com\nProduction | https://api.autofi.com\n\n### Request Headers\n\nThe `Content-Type` header for `POST` and `PUT` requests should be set to `application/json` unless otherwise noted.\n\nHeader | Value\n----------------|-------------\nContent-Type | application/json\n\n### Response Headers\nHeader | Value\n----------------|-------------\nX-RateLimit-Limit | Request quota\nX-RateLimit-Reset | UNIX timestamp the request quota will be reset after exceeding it\nX-RateLimit-Remaining | Remaining requests in quota\nRetry-After | Time in seconds to retry after\nX-Response-Time | The time in milliseconds it took to respond to the request\n\n# HTTP Responses\nAutoFi uses standard HTTP response codes to indicate the success or failure of an API request. \n\n## Successful requests\nHTTP requests that are successfully processed returns `2xx` status codes.\n\n| Status code | Description |\n| -- | -- |\n| **200 OK** | The request was successfully processed and requested content is returned in the response body. |\n| **201 Created** | The request was successfully processed and a new resource was created. |\n| **204 No Content** | The request was successfully processed and the response body has no content. |\n\n## Failed Requests\nHTTP requests that are not successfully processed, due to a client or server error, returns `4xx` or `5xx` status codes respectively.\n\n### HTTP 4XX status codes\n| Status code | Description \n| -- | -- |\n| **400 Bad Request** | The request cannot be processed. Typically due to a malformed payload.\n| **401 Unauthorized** | The request has invalid credentials (token).\n| **403 Forbidden** | The request has insufficient privileges.\n| **404 Not Found** | The requested resource could not be found.\n| **405 Method Not Allowed** | The API does not allow this method.\n| **415 Unsupported Media Type** | The payload format is not supported. [AutoFi request headers](#request-headers).\n| **429 Too Many Requests** | There were too many request in a given amount of time.\n\n### Error response definition\nMost types of errors have the following structure:\n| field | Description \n| --- | --- \n| code | reference to the status code of the response\n| message | defines the error type \n| errors | contains an array of objects with the description for an error or multiple errors generated.\n\n### Error Types\n\n`4xx` Errors can be thrown for different reasons. The following section describes common shapes for the error objects returned.\n\n#### Validation Errors\nValidation errors return a `400` status code indicating a `Bad Request`.\n\n| Parameter type | Description \n| --- | --- \n| string | `dob`, `email`, `phone`, etc., have formats and possibly character restrictions which must be observed. e.g. `phone` must be a 10 character long string that contains only numbers.\n| number | `apr`, `downPayment`, `term`, etc., have range requirements which must be observed. e.g. `apr` must be a number between [0...1]. \n| integer | `timeInMonths`, `monthlyPayment`, `year`, etc., have range requirements which must be observed.  \n\n\n> #### Example Response `400 Bad Request`\n>  ```json\n> {\n>   \"code\": 400,\n>   \"message\": \"Validation Error\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Required field \\\"applicant\\\" was not provided.\"\n>       },\n>       {\n>         \"description\": \"Field \\\"cosigner.email\\\" is invalid: io.\"\n>       }\n>   ]\n> }\n>  ```\n\n\n#### Authorization Errors\nAuthorization errors return a `401` status code indicating a `Unauthorized`.\nMost endpoints will return some of the following errors in case of an invalid\n(malformed or expired) or absent authorization token, indicating that a new \ntoken must be requested.\n\n> #### Example Response `401 `\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: invalid token\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: No authorization token was found\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: Format is Authorization: Bearer [token]\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: jwt malformed\"\n> }\n>  ```\n\n#### Not Found Errors\nNot Found errors return a `404` status code indicating a `Not Found`.\n\n> #### Example Response `404 Not found`\n>  ```json\n> {\n>     \"error\": \"Error: Not Found\"\n> }\n>  ```\n\n#### Rate Limiting\nIf the server is receiving an excessive amount of requests from a \nparticular user, it may return errors with a `429` status code \nindicating `Too many requests`.\n\n> #### Example Response `429 Too many requests`\n>  ```json\n> {\n>   \"code\": 429,\n>   \"message\": \"Account limit exceeded.\",\n> }\n>  ```\n\n\n### HTTP 5XX status codes\n| Http Status | Description |\n| -- | -- |\n| **500 Internal Server Error** | An unexpected error occurred, preventing successfully processing the request. |\n| **503 Service Unavailable** | An AutoFi service is unavailable, preventing successfully processing the request. |   \n\n> See the [Hypertext Transfer Protocol (HTTP)](https://datatracker.ietf.org/doc/html/rfc7231) or the [MDN docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for more details.\n\n### Error Type\n\n#### 503 Service Unavailable\nService unavailable error is returned when our servers is not available to process and return a response.\n\n> #### Example Response `503 service unavailable`\n>  ```json\n> {\n>   \"code\": 503,\n>   \"message\": \"Service Unavailable\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Service Unavailable\"\n>       },\n>   ]\n> }\n>  ```\n",
+      "type": "text/plain"
+    }
+  }
+}

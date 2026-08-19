@@ -1,0 +1,100 @@
+generated: '2026-08-14'
+method: searched
+source: https://api.autofi.com/api.html
+versioning:
+  scheme: uri-path
+  current: v1
+  docs: https://api.autofi.com/api.html
+  info_version: 1.0.0
+  note: >-
+    All resource operations sit under /v1. The token exchange (/auth/token) is
+    unversioned. No API-Version header, no date-based version train, and no
+    published version-change or migration policy.
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  in_contract: true
+  note: >-
+    AutoFi has no published deprecation policy page and does not document
+    RFC 8594 Sunset/Deprecation headers. It does mark deprecation inside the
+    contract: 13 schema properties carry `deprecated: true`, most with
+    in-description migration guidance. That is a real practice but not a policy,
+    so no `Deprecation` pointer is emitted in apis.yml.
+deprecated_operations: []
+deprecated_fields:
+- field: prequalification.ficoRange
+  location: POST /v1/prequalification (200 response)
+  guidance: Deprecated in favor of appropriately named `creditScoreRange` field.
+- field: DecisioningApplicantInput.incomeReported
+  guidance: Use `employmentIncome` and `otherIncome` fields instead.
+- field: DecisioningApplicantInput.creditScore
+  guidance: Deprecated and will be removed in a future version.
+- field: DecisioningCoApplicantInput.incomeReported
+  guidance: Use `employmentIncome` and `otherIncome` fields instead.
+- field: DecisioningCoApplicantInput.relationship
+  guidance: Use `relationshipCode` instead.
+- field: LoanApplicationTradeInInput.bookValue
+  guidance: If submitted, this field is ignored.
+- field: TradeIn.bookValue
+  guidance: The estimated market value of the vehicle.
+- field: FinancePricingStack.taxItems
+  guidance: Deprecated in favor of the standardized `appliedTaxes` field.
+- field: LeasePricingStack.taxItems
+  guidance: Deprecated in favor of the standardized `appliedTaxes` field.
+- field: LeasePricingStack.totalTaxes
+  guidance: Deprecated for LEASE applications.
+- field: FinanceFees[].isTaxable
+  guidance: Applies only when requested offerType is FINANCE.
+- field: FinanceEstimateFeeInput[].isTaxable
+  guidance: Indicates whether fee is taxable or not.
+- field: EstimatePaymentLeasePricingStack.cashAppliedToCap
+  guidance: Cash applied to the capitalized cost.
+stability_labels:
+- label: experimental
+  operations:
+  - POST /v1/dealmaker
+  - POST /v1/dealmaker/credit-application
+  - GET /v1/loan-application/{loanApplicationId}/externalResources
+  evidence: >-
+    These operations carry an "Experimental" stability badge image in their
+    OpenAPI description.
+status_page:
+  url: https://status.autofi.com
+  provider: Atlassian Statuspage
+  api: https://status.autofi.com/api/v2/summary.json
+  feeds:
+  - https://status.autofi.com/history.atom
+  - https://status.autofi.com/history.rss
+  components_observed:
+  - IaaS
+  - Auth
+  - Website CTAs
+  - Consumer Apps
+  - Deal Maker
+  - Dealer Apps
+  - Estimator
+  - LaaS APIs
+  - Pre-qualification
+  - Platform & Integrations
+  - Showroom
+  - Admin Center
+  - Loan Submission
+  - Infrastructure
+  - Inventory Ingestion
+  - Rehash
+  - Notifications
+  - Lender Submission (RouteOne)
+  - Lender Submission (DealerTrack)
+  method: probed
+  observed: '2026-08-14'
+sla:
+  url: null
+  uptime_target: null
+  note: No public SLA or uptime commitment was found.
+changelog:
+  url: null
+  note: >-
+    No dated API changelog or release-notes page was found on api.autofi.com or
+    autofi.com; company news lives at https://www.autofi.com/news/ but is press,
+    not API change history.
