@@ -43,6 +43,20 @@ tags:
 - Auto Finance
 - Dealerships
 - Sales Enablement
+- Software-as-a-Service
+- Lending
+- Loan Origination
+- Credit Decisioning
+- Payment Calculation
+- Prequalification
+tags_raw:
+- Company
+- Automotive
+- Fintech
+- Digital Retail
+- Auto Finance
+- Dealerships
+- Sales Enablement
 - SaaS
 - Lending
 - Loan Origination
@@ -108,6 +122,10 @@ apis:
   humanURL: https://www.autofi.com/.well-known/oauth-protected-resource/
   baseURL: https://www.autofi.com/wp-json/mcp/mcp-oauth-server
   tags:
+  - MCP
+  - Agents
+  - Content
+  tags_raw:
   - MCP
   - Agent
   - Content
