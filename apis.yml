@@ -40,6 +40,8 @@ description: >-
   estimation, and prequalification, with a UAT sandbox that can simulate lender
   decisions. AutoFi was surfaced as a portfolio company of 500 Global.
 url: https://raw.githubusercontent.com/api-evangelist/autofi/refs/heads/main/apis.yml
+x-api-posture: no-product-api
+x-api-posture-basis: observed
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
