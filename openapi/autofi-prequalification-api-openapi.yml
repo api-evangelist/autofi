@@ -1,0 +1,280 @@
+openapi: 3.2.0
+info:
+  title: AutoFi Prequalification API
+  description: "\n# Introduction\n Welcome to the AutoFi REST API. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.\n\n# HTTP Requests\n### Environments\nEnvironment | URL\n----------------|-------------\nTest Sandbox | https://api-uat.autofi.com\nProduction | https://api.autofi.com\n\n### Request Headers\n\nThe `Content-Type` header for `POST` and `PUT` requests should be set to `application/json` unless otherwise noted.\n\nHeader | Value\n----------------|-------------\nContent-Type | application/json\n\n### Response Headers\nHeader | Value\n----------------|-------------\nX-RateLimit-Limit | Request quota\nX-RateLimit-Reset | UNIX timestamp the request quota will be reset after exceeding it\nX-RateLimit-Remaining | Remaining requests in quota\nRetry-After | Time in seconds to retry after\nX-Response-Time | The time in milliseconds it took to respond to the request\n\n# HTTP Responses\nAutoFi uses standard HTTP response codes to indicate the success or failure of an API request. \n\n## Successful requests\nHTTP requests that are successfully processed returns `2xx` status codes.\n\n| Status code | Description |\n| -- | -- |\n| **200 OK** | The request was successfully processed and requested content is returned in the response body. |\n| **201 Created** | The request was successfully processed and a new resource was created. |\n| **204 No Content** | The request was successfully processed and the response body has no content. |\n\n## Failed Requests\nHTTP requests that are not successfully processed, due to a client or server error, returns `4xx` or `5xx` status codes respectively.\n\n### HTTP 4XX status codes\n| Status code | Description \n| -- | -- |\n| **400 Bad Request** | The request cannot be processed. Typically due to a malformed payload.\n| **401 Unauthorized** | The request has invalid credentials (token).\n| **403 Forbidden** | The request has insufficient privileges.\n| **404 Not Found** | The requested resource could not be found.\n| **405 Method Not Allowed** | The API does not allow this method.\n| **415 Unsupported Media Type** | The payload format is not supported. [AutoFi request headers](#request-headers).\n| **429 Too Many Requests** | There were too many request in a given amount of time.\n\n### Error response definition\nMost types of errors have the following structure:\n| field | Description \n| --- | --- \n| code | reference to the status code of the response\n| message | defines the error type \n| errors | contains an array of objects with the description for an error or multiple errors generated.\n\n### Error Types\n\n`4xx` Errors can be thrown for different reasons. The following section describes common shapes for the error objects returned.\n\n#### Validation Errors\nValidation errors return a `400` status code indicating a `Bad Request`.\n\n| Parameter type | Description \n| --- | --- \n| string | `dob`, `email`, `phone`, etc., have formats and possibly character restrictions which must be observed. e.g. `phone` must be a 10 character long string that contains only numbers.\n| number | `apr`, `downPayment`, `term`, etc., have range requirements which must be observed. e.g. `apr` must be a number between [0...1]. \n| integer | `timeInMonths`, `monthlyPayment`, `year`, etc., have range requirements which must be observed.  \n\n\n> #### Example Response `400 Bad Request`\n>  ```json\n> {\n>   \"code\": 400,\n>   \"message\": \"Validation Error\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Required field \\\"applicant\\\" was not provided.\"\n>       },\n>       {\n>         \"description\": \"Field \\\"cosigner.email\\\" is invalid: io.\"\n>       }\n>   ]\n> }\n>  ```\n\n\n#### Authorization Errors\nAuthorization errors return a `401` status code indicating a `Unauthorized`.\nMost endpoints will return some of the following errors in case of an invalid\n(malformed or expired) or absent authorization token, indicating that a new \ntoken must be requested.\n\n> #### Example Response `401 `\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: invalid token\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: No authorization token was found\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: Format is Authorization: Bearer [token]\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: jwt malformed\"\n> }\n>  ```\n\n#### Not Found Errors\nNot Found errors return a `404` status code indicating a `Not Found`.\n\n> #### Example Response `404 Not found`\n>  ```json\n> {\n>     \"error\": \"Error: Not Found\"\n> }\n>  ```\n\n#### Rate Limiting\nIf the server is receiving an excessive amount of requests from a \nparticular user, it may return errors with a `429` status code \nindicating `Too many requests`.\n\n> #### Example Response `429 Too many requests`\n>  ```json\n> {\n>   \"code\": 429,\n>   \"message\": \"Account limit exceeded.\",\n> }\n>  ```\n\n\n### HTTP 5XX status codes\n| Http Status | Description |\n| -- | -- |\n| **500 Internal Server Error** | An unexpected error occurred, preventing successfully processing the request. |\n| **503 Service Unavailable** | An AutoFi service is unavailable, preventing successfully processing the request. |   \n\n> See the [Hypertext Transfer Protocol (HTTP)](https://datatracker.ietf.org/doc/html/rfc7231) or the [MDN docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for more details.\n\n### Error Type\n\n#### 503 Service Unavailable\nService unavailable error is returned when our servers is not available to process and return a response.\n\n> #### Example Response `503 service unavailable`\n>  ```json\n> {\n>   \"code\": 503,\n>   \"message\": \"Service Unavailable\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Service Unavailable\"\n>       },\n>   ]\n> }\n>  ```\n"
+  version: 1.0.0
+  x-logo:
+    url: https://app.autofi.com/images/email-autofi-logo.png
+    backgroundColor: '#FFFFFF'
+    altText: AutoFi
+    href: /
+servers:
+- url: https://api.autofi.com
+  description: Production server
+- url: https://api-uat.autofi.com
+  description: Sandbox server
+security:
+- bearerAuth: []
+tags:
+- name: Prequalification
+paths:
+  /v1/prequalification:
+    post:
+      security:
+      - bearerAuth:
+        - create:prequalification
+      summary: Prequalification
+      description: "Prequalification can be utilized to help identify how much the user can afford. \nThis endpoint provides the maximum monthly payment, maximum loan amount, and a credit score range.\n"
+      tags:
+      - Prequalification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - applicant
+              properties:
+                applicant:
+                  type: object
+                  required:
+                  - name
+                  - address
+                  - phone
+                  - email
+                  - employmentIncome
+                  properties:
+                    name:
+                      $ref: '#/components/schemas/ApplicantFullNameInput'
+                    address:
+                      required:
+                      - street
+                      - city
+                      - state
+                      - zip
+                      type: object
+                      properties:
+                        street:
+                          example: 1234 Main St
+                          type: string
+                        street2:
+                          example: Apt B
+                          type: string
+                        city:
+                          example: Madison
+                          type: string
+                        state:
+                          example: WI
+                          type: string
+                        zip:
+                          example: '53714'
+                          type: string
+                    phone:
+                      type: string
+                      example: '5554443333'
+                      maxLength: 10
+                      minLength: 10
+                      pattern: ^[2-9][0-9]{9}$
+                    email:
+                      $ref: '#/components/schemas/EmailInput'
+                    employmentIncome:
+                      type: number
+                      format: float
+                      minimum: 0
+                      example: 10000
+                      description: Gross monthly income from employment.
+      responses:
+        '200':
+          description: Prequalification successfully calculated.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - prequalification
+                properties:
+                  prequalification:
+                    type: object
+                    properties:
+                      maxLoanAmount:
+                        description: The maximum loan that the applicant can afford.
+                        type: number
+                        format: float
+                      maxMonthlyPayment:
+                        description: The maximum monthly payment that the applicant can afford.
+                        type: number
+                        format: float
+                      ficoRange:
+                        description: Deprecated in favor of appropriately named `creditScoreRange` field.
+                        deprecated: true
+                        type: object
+                        properties:
+                          top:
+                            type: integer
+                          bottom:
+                            type: integer
+                      creditScoreRange:
+                        type: object
+                        properties:
+                          top:
+                            type: integer
+                          bottom:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequestPrequal'
+        '404':
+          $ref: '#/components/responses/NotFoundPrequal'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailablePrequal'
+components:
+  responses:
+    NotFoundPrequal:
+      description: NotFound
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                description: No credit record found for this user. The error description includes more details about the error.
+                allOf:
+                - $ref: '#/components/schemas/errors'
+            example:
+              code: 404
+              message: Not Found
+              errors:
+              - description: No credit record found for this user
+              - description: Credit Service returned "NoHit" response
+              - description: Credit Service returned "Locked" credit report
+              - description: Credit Service returned "Frozen" credit report
+              - description: Credit Service returned "Deceased" credit report
+              - description: Credit Service returned "No Information on Credit Report" credit report
+    ServiceUnavailablePrequal:
+      description: Service Unavailable
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                description: "These errors happen because the credit service was unable to handle the request.\nThe error description includes an error code that fall into the following categories:\n- Error code (7000, 7100, 7101, 7110) - Request failed by credit service.    \n- Error code (7002, 7200) - Credit bureau errors.\n- Error code (7003, 7199) - Credit service down.\n"
+                allOf:
+                - $ref: '#/components/schemas/errors'
+            example:
+              code: 503
+              message: Service Unavailable
+              errors:
+              - description: Credit Service Unavailable (7000).
+              - description: Credit Service Unavailable (7002).
+              - description: Credit Service Unavailable (7003).
+              - description: Credit Service Unavailable (7100).
+              - description: Credit Service Unavailable (7101).
+              - description: Credit Service Unavailable (7110).
+              - description: Credit Service Unavailable (7199).
+              - description: Credit Service Unavailable (7200).
+    BadRequestPrequal:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                description: "Array of validation errors found in the payload that include general type validation as well as any issues with the data surfaced by the credit bureau:\n - Invalid Address\n - Required field not provided\n - Field can not be null\n - Field must be an object\n - Field is not a defined field\n - Field is invalid\n"
+                allOf:
+                - $ref: '#/components/schemas/errors'
+            example:
+              code: 400
+              message: Bad Request
+              errors:
+              - description: 'Something went wrong: Invalid Address'
+              - description: Required field "applicant" was not provided.
+              - description: Field "applicant.phone" can not be null.
+              - description: Field "applicant.name" must be an object.
+              - description: Field "someName" is not a defined field.
+              - description: 'Field "applicant.email" is invalid: Email cannot represent an invalid email address value: notAnEmailAddress.'
+              - description: 'Field "applicant.employmentIncome" is invalid: Must be a float greater than or equal to 0.'
+              - description: 'STREETNAME: Required Data Not Entered'
+  schemas:
+    ApplicantBaseNameInput:
+      title: Name
+      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
+      type: object
+      required:
+      - first
+      - last
+      properties:
+        first:
+          description: First name
+          example: Mrs. Jamie-Lynn
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+        last:
+          description: Last name
+          example: O'Rourke-Van Winkle
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+    ApplicantFullNameInput:
+      allOf:
+      - $ref: '#/components/schemas/ApplicantBaseNameInput'
+      title: Name
+      properties:
+        middle:
+          description: Middle name
+          example: Alejandra
+          type: string
+        suffix:
+          description: Suffix indicating generational title
+          example: JR
+          type: string
+          enum:
+          - JR
+          - SR
+          - I
+          - II
+          - III
+          - IV
+          - V
+    code:
+      type: integer
+      description: HTTP status code.
+    message:
+      type: string
+      description: HTTP status description.
+    EmailInput:
+      type: string
+      example: fake@example.com
+      format: email
+      minLength: 1
+      title: Email
+      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+  securitySchemes:
+    bearerAuth:
+      description: 'Get access to data while protecting your account credentials.
+
+        '
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer {token}

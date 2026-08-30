@@ -1,0 +1,1835 @@
+openapi: 3.2.0
+info:
+  title: AutoFi Calculate Payment API
+  description: "\n# Introduction\n Welcome to the AutoFi REST API. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.\n\n# HTTP Requests\n### Environments\nEnvironment | URL\n----------------|-------------\nTest Sandbox | https://api-uat.autofi.com\nProduction | https://api.autofi.com\n\n### Request Headers\n\nThe `Content-Type` header for `POST` and `PUT` requests should be set to `application/json` unless otherwise noted.\n\nHeader | Value\n----------------|-------------\nContent-Type | application/json\n\n### Response Headers\nHeader | Value\n----------------|-------------\nX-RateLimit-Limit | Request quota\nX-RateLimit-Reset | UNIX timestamp the request quota will be reset after exceeding it\nX-RateLimit-Remaining | Remaining requests in quota\nRetry-After | Time in seconds to retry after\nX-Response-Time | The time in milliseconds it took to respond to the request\n\n# HTTP Responses\nAutoFi uses standard HTTP response codes to indicate the success or failure of an API request. \n\n## Successful requests\nHTTP requests that are successfully processed returns `2xx` status codes.\n\n| Status code | Description |\n| -- | -- |\n| **200 OK** | The request was successfully processed and requested content is returned in the response body. |\n| **201 Created** | The request was successfully processed and a new resource was created. |\n| **204 No Content** | The request was successfully processed and the response body has no content. |\n\n## Failed Requests\nHTTP requests that are not successfully processed, due to a client or server error, returns `4xx` or `5xx` status codes respectively.\n\n### HTTP 4XX status codes\n| Status code | Description \n| -- | -- |\n| **400 Bad Request** | The request cannot be processed. Typically due to a malformed payload.\n| **401 Unauthorized** | The request has invalid credentials (token).\n| **403 Forbidden** | The request has insufficient privileges.\n| **404 Not Found** | The requested resource could not be found.\n| **405 Method Not Allowed** | The API does not allow this method.\n| **415 Unsupported Media Type** | The payload format is not supported. [AutoFi request headers](#request-headers).\n| **429 Too Many Requests** | There were too many request in a given amount of time.\n\n### Error response definition\nMost types of errors have the following structure:\n| field | Description \n| --- | --- \n| code | reference to the status code of the response\n| message | defines the error type \n| errors | contains an array of objects with the description for an error or multiple errors generated.\n\n### Error Types\n\n`4xx` Errors can be thrown for different reasons. The following section describes common shapes for the error objects returned.\n\n#### Validation Errors\nValidation errors return a `400` status code indicating a `Bad Request`.\n\n| Parameter type | Description \n| --- | --- \n| string | `dob`, `email`, `phone`, etc., have formats and possibly character restrictions which must be observed. e.g. `phone` must be a 10 character long string that contains only numbers.\n| number | `apr`, `downPayment`, `term`, etc., have range requirements which must be observed. e.g. `apr` must be a number between [0...1]. \n| integer | `timeInMonths`, `monthlyPayment`, `year`, etc., have range requirements which must be observed.  \n\n\n> #### Example Response `400 Bad Request`\n>  ```json\n> {\n>   \"code\": 400,\n>   \"message\": \"Validation Error\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Required field \\\"applicant\\\" was not provided.\"\n>       },\n>       {\n>         \"description\": \"Field \\\"cosigner.email\\\" is invalid: io.\"\n>       }\n>   ]\n> }\n>  ```\n\n\n#### Authorization Errors\nAuthorization errors return a `401` status code indicating a `Unauthorized`.\nMost endpoints will return some of the following errors in case of an invalid\n(malformed or expired) or absent authorization token, indicating that a new \ntoken must be requested.\n\n> #### Example Response `401 `\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: invalid token\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: No authorization token was found\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: Format is Authorization: Bearer [token]\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: jwt malformed\"\n> }\n>  ```\n\n#### Not Found Errors\nNot Found errors return a `404` status code indicating a `Not Found`.\n\n> #### Example Response `404 Not found`\n>  ```json\n> {\n>     \"error\": \"Error: Not Found\"\n> }\n>  ```\n\n#### Rate Limiting\nIf the server is receiving an excessive amount of requests from a \nparticular user, it may return errors with a `429` status code \nindicating `Too many requests`.\n\n> #### Example Response `429 Too many requests`\n>  ```json\n> {\n>   \"code\": 429,\n>   \"message\": \"Account limit exceeded.\",\n> }\n>  ```\n\n\n### HTTP 5XX status codes\n| Http Status | Description |\n| -- | -- |\n| **500 Internal Server Error** | An unexpected error occurred, preventing successfully processing the request. |\n| **503 Service Unavailable** | An AutoFi service is unavailable, preventing successfully processing the request. |   \n\n> See the [Hypertext Transfer Protocol (HTTP)](https://datatracker.ietf.org/doc/html/rfc7231) or the [MDN docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for more details.\n\n### Error Type\n\n#### 503 Service Unavailable\nService unavailable error is returned when our servers is not available to process and return a response.\n\n> #### Example Response `503 service unavailable`\n>  ```json\n> {\n>   \"code\": 503,\n>   \"message\": \"Service Unavailable\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Service Unavailable\"\n>       },\n>   ]\n> }\n>  ```\n"
+  version: 1.0.0
+  x-logo:
+    url: https://app.autofi.com/images/email-autofi-logo.png
+    backgroundColor: '#FFFFFF'
+    altText: AutoFi
+    href: /
+servers:
+- url: https://api.autofi.com
+  description: Production server
+- url: https://api-uat.autofi.com
+  description: Sandbox server
+security:
+- bearerAuth: []
+tags:
+- name: Calculate Payment
+paths:
+  /v1/estimate/cash:
+    post:
+      security:
+      - bearerAuth:
+        - create:estimate
+      summary: Cash
+      description: 'Use this endpoint to calculate estimated payments for a `cash` car deal.
+
+        '
+      tags:
+      - Calculate Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashEstimateBody'
+      responses:
+        '200':
+          description: Payments successfully calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CashEstimateResponse'
+        '400':
+          $ref: '#/components/responses/CashEstimate400'
+  /v1/estimate/finance:
+    post:
+      security:
+      - bearerAuth:
+        - create:estimate
+      summary: Finance
+      description: 'Use this endpoint to calculate estimated payments for a `finance` car deal.
+
+        '
+      tags:
+      - Calculate Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceEstimateBody'
+      responses:
+        '200':
+          description: Payments successfully calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceEstimateResponse'
+        '400':
+          $ref: '#/components/responses/FinanceEstimate400'
+  /v1/estimate/lease:
+    post:
+      security:
+      - bearerAuth:
+        - create:estimate
+      summary: Lease
+      description: 'Use this endpoint to calculate estimated payments for a `lease` car deal.
+
+        '
+      tags:
+      - Calculate Payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaseEstimateBody'
+      responses:
+        '200':
+          description: Payments successfully calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaseEstimateResponse'
+        '400':
+          $ref: '#/components/responses/LeaseEstimate400'
+components:
+  schemas:
+    SelfReportedCreditScore:
+      type: integer
+      minimum: 300
+      maximum: 850
+      description: Self reported Credit score. Number between 300 and 850 or `null` to indicate that no credit score is available.
+    EstimatePaymentFinancePricingStack:
+      type: object
+      description: The `pricingStack` details for `FINANCE`.
+      allOf:
+      - $ref: '#/components/schemas/PartialBasePricingStack'
+      properties:
+        amountFinanced:
+          allOf:
+          - $ref: '#/components/schemas/amountFinanced'
+        leaseCharge:
+          allOf:
+          - $ref: '#/components/schemas/financeCharge'
+          example: 1740.98
+        monthlyPayment:
+          $ref: '#/components/schemas/monthlyPayment'
+        numberOfPayments:
+          $ref: '#/components/schemas/numberOfPayments'
+        termMonths:
+          $ref: '#/components/schemas/termMonths'
+        totalFees:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total amount of all fees.
+        totalRebates:
+          $ref: '#/components/schemas/totalRebates'
+        totalProducts:
+          $ref: '#/components/schemas/totalProducts'
+        totalOfPayments:
+          $ref: '#/components/schemas/totalOfPayments'
+        totalTaxes:
+          allOf:
+          - $ref: '#/components/schemas/totalTaxes'
+        tradeInAmount:
+          type: number
+          format: float
+          description: The submitted trade-in amount.
+      example:
+        financeCharge: 2269.57
+        totalTaxes: 4075.55
+        totalFees: 249.99
+        amountFinanced: 43193.03
+        apr: 0.02
+        buyRate: 0.019
+        monthlyPayment: 757.71
+        numberOfPayments: 59
+        termMonths: 60
+        totalOfPayments: 45462.6
+        totalRebates: 2499.99
+        totalProducts: 760.01
+        tradeInAmount: 9100
+    amount:
+      type: number
+      description: The difference between the value of the vehicle and payoff amount i.e. `bookValue` - `payoff`.
+      format: float
+      example: 9100
+    totalOfPayments:
+      type:
+      - number
+      - 'null'
+      format: float
+      description: Total paid for all payments.
+      example: 13736.9
+    NonOemRebateInput:
+      allOf:
+      - $ref: '#/components/schemas/RebateBaseInput'
+      properties:
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+        taxRule:
+          type:
+          - string
+          - 'null'
+          default: null
+          enum:
+          - DEDUCT_AFTER_TAX
+          - DEDUCT_BEFORE_TAX
+          - null
+          example: DEDUCT_AFTER_TAX
+          description: 'Indicates how the rebate should be applied with respect to the tax calculation.
+
+            When `null` or not provided, the default tax behavior is applied for the given jurisdiction.
+
+
+            `DEDUCT_AFTER_TAX`: The rebate amount is deducted **_after_** tax is calculated.
+
+
+            `DEDUCT_BEFORE_TAX`: The rebate amount is deducted **_before_** tax is calculated.
+
+            '
+    LeaseRebateTypeInput:
+      example: CASH
+      description: Default is `CASH`
+      type: string
+      enum:
+      - CASH
+      - LEASE_RATE
+    LeaseEstimateBody:
+      type: object
+      required:
+      - dealer
+      - vehicle
+      - offerPreferences
+      properties:
+        applicant:
+          allOf:
+          - $ref: '#/components/schemas/CalculatePaymentsApplicant'
+          description: The `applicant` is recommended to calculate accurate taxes.
+        dealer:
+          allOf:
+          - $ref: '#/components/schemas/DealerCodeOnlyInput'
+        fees:
+          allOf:
+          - $ref: '#/components/schemas/LeaseEstimateFeeInput'
+          description: Fees included in the deal. These can come from the input body or the dealer configuration.
+        offerPreferences:
+          allOf:
+          - $ref: '#/components/schemas/PaymentOfferPreferences'
+          description: Offer preferences may be used to set constraints on a potential `LEASE` payment schedule.
+          properties:
+            annualMileage:
+              description: Miles or km associated with the offer.
+              minimum: 1
+              example: 12000
+              type: integer
+          required:
+          - annualMileage
+          example:
+            isSubvented: true
+            annualMileage: 12000
+            apr: 0.02
+            downPayment: 2000
+            incentiveOption: LOWEST_MONTHLY
+            term: 36
+        products:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/ProductInput'
+          description: List of products included in the `LEASE` payment calculation.
+        rebates:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentLeaseRebatesInput'
+        tradeIn:
+          allOf:
+          - $ref: '#/components/schemas/EstimatesTradeInInput'
+        vehicle:
+          allOf:
+          - $ref: '#/components/schemas/EstimateVehicle'
+          description: Vehicle may be specified by its `VIN` if it already exists in the AutoFi inventory for the dealer. Otherwise, the required fields for `FullVehicle` must be submitted.
+    RebateBaseInput:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 2499.99
+          format: float
+          description: The rebate amount.
+          exclusiveMinimum: 0
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
+          example: Rebate Disclaimer
+        isDiscount:
+          type: boolean
+          default: false
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
+        isQualifiedOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+        name:
+          type: string
+          minLength: 1
+          description: Description of the rebate to be shown to the customer.
+          example: VA Rebate
+    EstimatePaymentFinanceNonOemRebatesOutput:
+      type: array
+      description: Rebates applied to the `FINANCE` payment estimation.
+      items:
+        allOf:
+        - $ref: '#/components/schemas/NonOemRebateInput'
+      example:
+      - amount: 7500
+        disclaimer: Only applicable at time of purchase for registered dealers.
+        isDiscount: false
+        isPrivateOffer: false
+        isQualifiedOffer: false
+        name: Federal EV Tax Credit
+        taxRule: DEDUCT_AFTER_TAX
+    FinanceEstimateFeeOutput:
+      type: array
+      items:
+        properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
+          code:
+            $ref: '#/components/schemas/schemas-FeeCodeInput'
+          name:
+            $ref: '#/components/schemas/schemas-FeeName'
+      example:
+        amount: 249.99
+        code: SHIPPING_FEE
+        name: Shipping fee
+    offerPreferences:
+      allOf:
+      - $ref: '#/components/schemas/PaymentOfferPreferences'
+      properties:
+        pricePlan:
+          description: This field can be used to denote a discount pricing program. Some manufacturers may allow eligible employees and their family members additional savings on the purchase of new vehicles.
+          type: string
+          example: Z
+    TaxItemLease:
+      type: object
+      description: Lease Tax Item.
+      properties:
+        amount:
+          description: Tax item amount.
+          type: number
+          format: float
+        description:
+          description: Tax item description.
+          type: string
+        descriptionI18n:
+          description: Tax item description for locale.
+          type: string
+    EstimatePaymentCashPricingStack:
+      type: object
+      description: The `pricingStack` details for `CASH`.
+      properties:
+        totalDue:
+          description: The total amount to pay (i.e. includes `vehicle`, `fees`, `rebates`, `products` and `trade-in`).
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 34202.76
+        totalFees:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total amount of all fees.
+          example: 249.99
+        totalProducts:
+          allOf:
+          - $ref: '#/components/schemas/totalProducts'
+          example: 760.01
+        totalRebates:
+          $ref: '#/components/schemas/totalRebates'
+        totalTaxes:
+          description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 6513.67
+        tradeInAmount:
+          type: number
+          format: float
+          example: 9100
+          description: The submitted trade-in amount.
+    EstimatePaymentLeaseRebatesOutput:
+      type: array
+      description: Rebates which should be applied to the `LEASE` payment estimation.
+      items:
+        allOf:
+        - $ref: '#/components/schemas/schemas-RebateInput'
+        properties:
+          expiryDate:
+            type: string
+            format: date
+            description: Expiration date of the rebate.
+          type:
+            $ref: '#/components/schemas/LeaseRebateTypeInput'
+      example:
+      - amount: 2499.99
+        disclaimer: Veterans only Rebate
+        expiryDate: 12-01-2024
+        isDiscount: true
+        isPrivateOffer: true
+        isQualifiedOffer: true
+        name: VA Rebate
+        programId: VA_1234
+        type: LEASE_RATE
+    numberOfPayments:
+      type:
+      - integer
+      - 'null'
+      minimum: 0
+      description: Number of payments to make.
+      example: 35
+    CashEstimateBody:
+      type: object
+      required:
+      - dealer
+      - vehicle
+      properties:
+        applicant:
+          allOf:
+          - $ref: '#/components/schemas/CalculatePaymentsApplicant'
+          description: The `applicant` is recommended to calculate accurate taxes.
+        dealer:
+          allOf:
+          - $ref: '#/components/schemas/DealerCodeOnlyInput'
+        fees:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateFeeInput'
+          description: Fees included in the deal. These can come from the input body or the dealer configuration.
+        products:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/ProductInput'
+          description: List of products included in the `CASH` payment calculation.
+        rebates:
+          type: array
+          description: Rebates which should be applied to the `CASH` payment estimation. In order for the given rebates to be applied, they must exist for the `dealer`.
+          items:
+            $ref: '#/components/schemas/schemas-RebateInput'
+        tradeIn:
+          allOf:
+          - $ref: '#/components/schemas/EstimatesTradeInInput'
+        vehicle:
+          $ref: '#/components/schemas/EstimateVehicle'
+    referenceId:
+      type:
+      - string
+      - 'null'
+      title: Product Reference ID
+      example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+      description: Product identifier used to reference a product within a DMS.
+    FeeAmount:
+      type: number
+      example: 249.99
+      format: float
+      minimum: 0
+    EstimateVehicle:
+      description: Vehicle may be specified by either only its `VIN` or the `Full Vehicle`. A `vehicle` submitted with only a `VIN` must be in the AutoFi inventory. However, when submitting the `FullVehicle`, it is not required to be in the AutoFi inventory.
+      oneOf:
+      - $ref: '#/components/schemas/VehicleVinOnlyInput'
+      - $ref: '#/components/schemas/FullVehicle'
+      example:
+        age: NEW
+        bodyType: '84102'
+        color: Yellow
+        dealerRetailPrice: 52412
+        fuelType: GASOLINE
+        invoice: 47412.99
+        make: FORD
+        mileage: 12
+        model: Mustang
+        modelCode: SN-95
+        msrp: 52412.99
+        stockNumber: LT14
+        trim: GT
+        vin: 1FM5K8HC6LGB91718
+        year: 2021
+    Ownership:
+      type: string
+      description: Represents the ownership status of the trade-in vehicle. default to `OWNED`
+      enum:
+      - OWNED
+      - LEASED
+      default: OWNED
+    FinanceEstimateResponse:
+      type: object
+      properties:
+        offerPreferences:
+          allOf:
+          - $ref: '#/components/schemas/offerPreferences'
+        pricingStack:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentFinancePricingStack'
+        appliedTaxes:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateTaxOutput'
+          description: Taxes applied to estimated payment calculation.
+        appliedFees:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateFeeOutput'
+          description: Fees applied to estimated payment calculation.
+        appliedRebates:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentFinanceRebatesOutput'
+          description: Rebates applied to estimated payment calculation.
+        appliedNonOemRebates:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentFinanceNonOemRebatesOutput'
+          description: Non OEM Rebates applied to estimated payment calculation.
+        selectedProducts:
+          type: array
+          description: Selected products.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/ProductOutput'
+          example:
+          - mileage: 50000
+            monthlyPayment: 12.67
+            name: Extended Warranty
+            price: 700
+            referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+            tax: 60.01
+            taxableAmount: 700
+            taxLineItems:
+            - jurisdiction:
+                name: COLORADO
+                type: STATE
+                imposition: General Sales and Use Tax
+              tax:
+                rate: 0.086
+                amount: 60.1
+            termMonths: 60
+            total: 760.01
+    price:
+      type: number
+      example: 100
+      format: float
+      minimum: 0
+      description: Pretax price.
+    totalTaxes:
+      description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
+      type:
+      - number
+      - 'null'
+      format: float
+      example: 6513.67
+    TaxItemsLease:
+      type: object
+      description: Tax items applied to estimated lease payment calculation.
+      properties:
+        capitalized:
+          type:
+          - array
+          - 'null'
+          description: Capitalized tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        dueAtSigning:
+          type:
+          - array
+          - 'null'
+          description: Tax items due at signing.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        biweekly:
+          type:
+          - array
+          - 'null'
+          description: Bi-weekly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        monthly:
+          type:
+          - array
+          - 'null'
+          description: Monthly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+    payoff:
+      type: number
+      description: The payoff amount the customer needs to pay to satisfy the terms of their vehicle loan.
+      format: float
+      example: 5500
+    EstimatePaymentFinanceRebatesInput:
+      title: Rebate
+      type: array
+      description: 'Rebates which should be applied to the `FINANCE` payment estimation.
+
+
+        This field can be used to include qualified rebates (i.e. selected by the customer). The `programId` is required
+
+        to match these up with the correct rebate program.
+
+        '
+      items:
+        allOf:
+        - $ref: '#/components/schemas/schemas-RebateInput'
+        properties:
+          type:
+            $ref: '#/components/schemas/FinanceRebateTypeInput'
+      example:
+      - amount: 2499.99
+        disclaimer: Veterans only Rebate
+        isDiscount: false
+        isPrivateOffer: false
+        isQualifiedOffer: true
+        name: VA Rebate
+        programId: VA_1234
+        type: CASH
+    TaxableAmount:
+      type: number
+      example: 34317.99
+      format: float
+      minimum: 0
+      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" /> Taxable amount.</p>'
+    EstimatePaymentFinanceRebatesOutput:
+      type: array
+      description: Rebates applied to the `FINANCE` payment estimation.
+      items:
+        allOf:
+        - $ref: '#/components/schemas/schemas-RebateInput'
+        properties:
+          type:
+            $ref: '#/components/schemas/FinanceRebateTypeInput'
+          expiryDate:
+            type: string
+            format: date
+            description: Expiration date of the rebate.
+      example:
+      - amount: 2499.99
+        disclaimer: Veterans only Rebate
+        expiryDate: 12-01-2024
+        isDiscount: true
+        isPrivateOffer: true
+        isQualifiedOffer: true
+        name: VA Rebate
+        programId: VA_1234
+        type: CASH
+    CashEstimateResponse:
+      type: object
+      properties:
+        pricingStack:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentCashPricingStack'
+        appliedTaxes:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateTaxOutput'
+          description: Taxes applied to estimated payment calculation.
+          example: 6513.67
+        appliedFees:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateFeeOutput'
+          description: Fees applied to estimated payment calculation.
+        appliedRebates:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentFinanceRebatesOutput'
+          description: Rebates applied to estimated payment calculation.
+        selectedProducts:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/BaseSelectedProduct'
+            type: object
+            properties:
+              taxableAmount:
+                $ref: '#/components/schemas/TaxableAmount'
+              taxLineItems:
+                $ref: '#/components/schemas/TaxLineItems'
+          description: Selected products.
+          example:
+          - mileage: 50000
+            name: Extended Warranty
+            price: 700
+            referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+            tax: 60.01
+            termMonths: 60
+            total: 760.01
+            taxableAmount: 100
+            taxLineItems:
+            - jurisdiction:
+                name: COLORADO
+                type: STATE
+                imposition: General Sales and Use Tax
+              tax:
+                rate: 0.029
+                amount: 2.9
+    CalculatePaymentsApplicant:
+      properties:
+        address:
+          description: Applicant's address used to calculate `taxes`.
+          properties:
+            street:
+              type: string
+              example: 1234 Main St
+              description: Applicant street line.
+            street2:
+              type: string
+              example: Apt B
+              description: Applicant street line 2.
+            city:
+              type: string
+              example: Madison
+              description: _Required if `street` is included._
+            state:
+              type: string
+              example: WI
+              description: Two character code for state (US). _Required if `street` is included._
+            zip:
+              type: string
+              minLength: 1
+              example: '53714'
+              description: Zip code.
+          required:
+          - zip
+        selfReportedCreditScore:
+          $ref: '#/components/schemas/SelfReportedCreditScore'
+      type: object
+    BaseSelectedProduct:
+      type: object
+      description: Fields in common for FINANCE, CASH and LEASE.
+      properties:
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The mileage selected by the customer for a specific product (e.g. VSC).
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the F&I product selected.
+        price:
+          $ref: '#/components/schemas/price'
+        referenceId:
+          $ref: '#/components/schemas/referenceId'
+        tax:
+          $ref: '#/components/schemas/tax'
+        taxableAmount:
+          $ref: '#/components/schemas/TaxableAmount'
+        taxLineItems:
+          $ref: '#/components/schemas/TaxLineItems'
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
+        total:
+          type:
+          - number
+          - 'null'
+          example: 1
+          format: float
+          minimum: 0
+          description: The total price of the product including the finance charge.
+      example:
+        mileage: 50000
+        name: Extended Warranty
+        price: 700
+        referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+        tax: 60.01
+        taxableAmount: 700
+        taxLineItems:
+        - jurisdiction:
+            name: COLORADO
+            type: STATE
+            imposition: General Sales and Use Tax
+          tax:
+            rate: 0.086
+            amount: 60.1
+        termMonths: 60
+        total: 760.01
+    code:
+      type: integer
+      description: HTTP status code.
+    EstimatePaymentLeasePricingStack:
+      type: object
+      description: The `pricingStack` details for `LEASE`.
+      allOf:
+      - $ref: '#/components/schemas/AppliedLeasePricingStackFigures'
+      - $ref: '#/components/schemas/PartialBasePricingStack'
+      properties:
+        annualMileage:
+          description: Miles or km associated with the offer.
+          example: 12000
+          type:
+          - integer
+          - 'null'
+        cashAppliedToCap:
+          deprecated: true
+          description: Cash applied to the capitalized cost.
+          type:
+          - number
+          - 'null'
+          example: 4500
+          format: float
+        capReduction:
+          description: Capitalized Cost Reduction. The sum of the cash, rebates and trade in.  This will be subtracted from the Gross Capitalization Cost.
+          type:
+          - number
+          - 'null'
+          example: 7018.44
+          format: float
+        depreciation:
+          description: The amount of the vehicle will depreciate over the life of the term.
+          type:
+          - number
+          - 'null'
+          example: 17125.97
+          format: float
+        grossCap:
+          description: Gross Capitalization Cost.  The total amount that will be applied to the loan.
+          format: float
+          example: 46127.96
+          type:
+          - number
+          - 'null'
+        leaseCharge:
+          description: The lease charge is an interest applied to the total financing of the vehicle.
+          type:
+          - number
+          - 'null'
+          example: 6313.76
+          format: float
+        leaseTaxItems:
+          $ref: '#/components/schemas/TaxItemsLease'
+        moneyFactor:
+          description: The money factor is the financing charge a person will pay on a lease.
+          type:
+          - number
+          - 'null'
+          example: 0
+          format: float
+        netCap:
+          description: Net Capitalization Cost.
+          type:
+          - number
+          - 'null'
+          example: 39109.52
+          format: float
+        residualPercentage:
+          description: Value of the vehicle at the end of the term expressed as a percentage of the sale price.
+          type:
+          - number
+          - 'null'
+          example: 0.51
+          format: float
+        residualValue:
+          description: Value of the vehicle at the end of the term.
+          type:
+          - number
+          - 'null'
+          example: 21983.55
+          format: float
+        taxRate:
+          description: Effective tax rate.
+          type:
+          - number
+          - 'null'
+          format: float
+          minimum: 0
+          maximum: 1
+          example: 0.08625
+        totalDueAtSigning:
+          description: Total amount due upon signing.
+          type:
+          - number
+          - 'null'
+          example: 2000
+          format: float
+        totalCapitalizedFees:
+          description: Total amount of applied fees with a fee placement of `GROSS_CAP`.
+          type:
+          - number
+          - 'null'
+          example: 249.99
+          format: float
+        totalSigningFees:
+          description: Total amount of applied fees with a fee placement of `DUE_AT_SIGNING`.
+          type:
+          - number
+          - 'null'
+          example: 2000
+          format: float
+        tradeInAmount:
+          type: number
+          format: float
+          example: 9100
+          description: The submitted trade-in amount.
+      example:
+        annualMileage: 12000
+        appliedToCap:
+          downPayment: 1513.4
+          rebates: 750
+          tradeIn: 9100
+        appliedToSigning:
+          downPayment: 486.6
+          rebates: 0
+          tradeIn: 0
+        moneyFactor: 0.0008333333333333334
+        leaseCharge: 1740.98
+        grossCap: 45365.49
+        capReduction: 11363.4
+        cashAppliedToCap: 1513.4
+        depreciation: 9702.09
+        netCap: 34002.09
+        residualPercentage: 0.54
+        residualValue: 24300
+        leaseTaxItems:
+          capitalized: []
+          dueAtSigning:
+          - amount: 151.26
+            description: Capitalized Cost Reduction Tax
+          biweekly:
+          - amount: 8.07
+            description: Sales/Use Tax
+          monthly:
+          - amount: 17.48
+            description: Sales/Use Tax
+        taxRate: 0.055
+        totalCapitalizedFees: 249.99
+        totalDueAtSigning: 2000
+        totalSigningFees: 0
+        amountFinanced: null
+        apr: 0.02
+        buyRate: 0.0275
+        monthlyPayment: 335.34
+        numberOfPayments: 35
+        termMonths: 36
+        totalOfPayments: 13736.9
+        totalRebates: 750
+        totalProducts: 115.5
+        tradeInAmount: 9100
+    amountFinanced:
+      description: Total amount financed for the vehicle.
+      example: 2269.57
+    LeaseEstimateResponse:
+      type: object
+      properties:
+        offerPreferences:
+          allOf:
+          - $ref: '#/components/schemas/properties-offerPreferences'
+          properties:
+            isSubvented:
+              type: boolean
+              description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility. This flag will always be `true` for leases.
+        pricingStack:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentLeasePricingStack'
+        appliedRebates:
+          allOf:
+          - $ref: '#/components/schemas/EstimatePaymentLeaseRebatesOutput'
+          description: Rebates applied to estimated payment calculation.
+        appliedFees:
+          allOf:
+          - $ref: '#/components/schemas/LeaseEstimateFeeInput'
+          description: Fees applied to estimated payment calculation.
+          example:
+            amount: 249.99
+            code: SHIPPING_FEE
+            feePlacement: GROSS_CAP
+            name: Shipping fee.
+        selectedProducts:
+          type: array
+          description: Selected products.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/ProductOutput'
+          example:
+          - mileage: 50000
+            monthlyPayment: 25.6
+            name: Extended Warranty
+            price: 700
+            referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+            tax: 60.01
+            termMonths: 60
+            total: 760.01
+            taxableAmount: 100
+            taxLineItems:
+            - jurisdiction:
+                name: COLORADO
+                type: STATE
+                imposition: General Sales and Use Tax
+              tax:
+                rate: 0.029
+                amount: 2.9
+    PartialBasePricingStack:
+      type: object
+      description: Fields in common for FINANCE and LEASE.
+      properties:
+        amountFinanced:
+          type:
+          - number
+          - 'null'
+          format: float
+        apr:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Annual percentage rate.
+          example: 0.02
+        buyRate:
+          description: Dealer financing rate.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 0.0275
+        monthlyPayment:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 335.34
+        numberOfPayments:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: Number of payments to make.
+          example: 35
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          description: Duration of the contract in months.
+        totalRebates:
+          type:
+          - integer
+          - 'null'
+          description: Total rebate amount.
+          example: 2499.99
+        totalOfPayments:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total paid for all payments.
+          example: 13736.9
+        totalProducts:
+          description: Total amount of all products including taxes.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 115.5
+    schemas-FeeName:
+      type: string
+      description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
+    ProductBaseInput:
+      type: object
+      title: Product
+      description: Product information.
+      properties:
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        name:
+          type: string
+          description: Product description.
+          example: Extended Warranty
+        price:
+          $ref: '#/components/schemas/price'
+        termMiles:
+          type: integer
+          description: Product mileage limit.
+          example: 100000
+        termMonths:
+          type: integer
+          description: Product duration.
+          example: 60
+    schemas-FeeCodeInput:
+      example: SHIPPING_FEE
+      description: 'Default is `OTHER`. <br> Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman. <br> All fee types will be taxable based upon the appropriate jurisdiction with the exception of `OTHER`.'
+      type: string
+      enum:
+      - DOC_FEE
+      - OTHER
+      - SHIPPING_FEE
+      - TIRE_FEE
+      - TITLE_REG
+    DealerCodeOnlyInput:
+      type: object
+      title: Dealer
+      description: Dealer information.
+      required:
+      - code
+      properties:
+        code:
+          description: Identification code assigned to dealer by AutoFi.
+          type: string
+          pattern: ^[A-Z0-9]{4}$
+          minLength: 4
+          maxLength: 4
+          example: 76KR
+    tax:
+      type: number
+      example: 15.5
+      format: float
+      minimum: 0
+      description: "Tax amount for the product. Defaults to 0.  \n**Notes:** Does not include vehicle taxes.  \n  For vehicle specific taxes see `appliedTaxes.amount`.  \n  For Total taxes see `pricingStack.totalTaxes`.\n"
+    totalProducts:
+      description: Total amount of all products including taxes.
+      type:
+      - number
+      - 'null'
+      format: float
+      example: 115.5
+    ProductInput:
+      allOf:
+      - $ref: '#/components/schemas/ProductBaseInput'
+      properties:
+        isTaxable:
+          type: boolean
+          example: true
+          default: false
+          description: Flag indicating whether this product is taxable or not. When `tax` is set to a `non-zero` amount then `isTaxable` is automatically set to true. In the case that zero or no `tax` is provided and `isTaxable` is `true`, the `tax` is calculated and included in the deal.
+        tax:
+          $ref: '#/components/schemas/tax'
+      required:
+      - category
+      - name
+      - price
+    VinBaseSchema:
+      type: string
+      maxLength: 17
+      minLength: 17
+      pattern: ^[a-zA-Z0-9]{17}$
+    FinanceEstimateBody:
+      type: object
+      required:
+      - dealer
+      - vehicle
+      properties:
+        applicant:
+          allOf:
+          - $ref: '#/components/schemas/CalculatePaymentsApplicant'
+          description: The `applicant` is recommended to calculate accurate taxes.
+        dealer:
+          allOf:
+          - $ref: '#/components/schemas/DealerCodeOnlyInput'
+        fees:
+          allOf:
+          - $ref: '#/components/schemas/FinanceEstimateFeeInput'
+          description: Fees included in the deal. These can come from the input body or the dealer configuration.
+        offerPreferences:
+          allOf:
+          - $ref: '#/components/schemas/PaymentOfferPreferences'
+          properties:
+            pricePlan:
+              description: This field can be used to denote a discount pricing program. Some manufacturers may allow eligible employees and their family members additional savings on the purchase of new vehicles.
+              type: string
+              example: Z
+        products:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/ProductInput'
+          description: List of products included in the `FINANCE` payment calculation.
+        rebates:
+          $ref: '#/components/schemas/EstimatePaymentFinanceRebatesInput'
+        nonOemRebates:
+          $ref: '#/components/schemas/EstimatePaymentFinanceNonOemRebatesInput'
+        tradeIn:
+          allOf:
+          - $ref: '#/components/schemas/EstimatesTradeInInput'
+        vehicle:
+          $ref: '#/components/schemas/EstimateVehicle'
+    PaymentOfferPreferences:
+      description: Offer preferences may be used to set constraints on a potential `FINANCE` payment schedule.
+      type: object
+      properties:
+        apr:
+          type: number
+          format: float
+          example: 0.02
+          description: Annual percentage rate in decimals. e.g. if the apr is 2% this should be 0.02
+        downPayment:
+          type: integer
+          example: 2000
+          minimum: 0
+          description: Amount the consumer is putting down towards the vehicle
+        incentiveOption:
+          $ref: '#/components/schemas/IncentiveOption'
+        isSubvented:
+          type: boolean
+          description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
+        term:
+          type: integer
+          example: 60
+          minimum: 1
+          description: Length of term in months
+    totalRebates:
+      type:
+      - integer
+      - 'null'
+      description: Total rebate amount.
+      example: 2499.99
+    LeaseEstimateFeeInput:
+      type: array
+      items:
+        properties:
+          amount:
+            type: number
+            example: 249.99
+            format: float
+            minimum: 0
+            description: Amount value.
+          code:
+            type: string
+            example: SHIPPING_FEE
+            description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
+            enum:
+            - DOC_FEE
+            - OTHER
+            - SHIPPING_FEE
+            - TIRE_FEE
+            - TITLE_REG
+          feePlacement:
+            type: string
+            enum:
+            - GROSS_CAP
+            - DUE_AT_SIGNING
+            description: 'Applies only when `requestedOfferType` is  "LEASE". Defaults to `GROSS_CAP`.
+
+              `GROSS_CAP` means that the fee will be added to the Gross Capitalization Cost of the lease.
+
+              `DUE_AT_SIGNING` means that the fee will be added to the Due at Signing
+
+              Calculation and thus deducted from the down payment.
+
+              '
+          name:
+            type: string
+            description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
+        required:
+        - amount
+        - name
+      description: These given `Fees` take priority over any dealer specific `Fees`. Fee submission is optional.
+    FinanceEstimateFeeInput:
+      type: array
+      items:
+        properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
+          code:
+            $ref: '#/components/schemas/schemas-FeeCodeInput'
+          isTaxable:
+            type: boolean
+            description: 'Default: `false` <br> Indicates whether fee is taxable or not.'
+            deprecated: true
+          name:
+            $ref: '#/components/schemas/schemas-FeeName'
+        required:
+        - amount
+        - name
+      description: These given `Fees` take priority over any dealer specific `Fees`. Fee submission is optional.
+      example:
+        amount: 249.99
+        code: SHIPPING_FEE
+        name: Shipping fee
+    properties-offerPreferences:
+      allOf:
+      - $ref: '#/components/schemas/PaymentOfferPreferences'
+      description: Offer preferences may be used to set constraints on a potential `LEASE` payment schedule.
+      properties:
+        annualMileage:
+          description: Miles or km associated with the offer.
+          minimum: 1
+          example: 12000
+          type: integer
+      required:
+      - annualMileage
+      example:
+        isSubvented: true
+        annualMileage: 12000
+        apr: 0.02
+        downPayment: 2000
+        incentiveOption: LOWEST_MONTHLY
+        term: 36
+    message:
+      type: string
+      description: HTTP status description.
+    ValidationError:
+      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
+      allOf:
+      - $ref: '#/components/schemas/errors'
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+    termMonths:
+      description: Duration of the `FINANCE` contract in months.
+      example: 48
+    ProductOutput:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/price'
+        name:
+          type:
+          - string
+          - 'null'
+          example: Extended Warranty
+          description: Name of the F&I product selected.
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 12000
+          minimum: 0
+          description: The mileage selected by the customer for a specific product (e.g. VSC).
+        monthlyPayment:
+          type:
+          - number
+          - 'null'
+          example: 25.6
+          format: float
+          minimum: 0
+          description: Monthly payment over the finance term including the finance charge.
+        referenceId:
+          $ref: '#/components/schemas/referenceId'
+        tax:
+          $ref: '#/components/schemas/tax'
+        taxableAmount:
+          $ref: '#/components/schemas/TaxableAmount'
+        taxLineItems:
+          $ref: '#/components/schemas/TaxLineItems'
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          example: 12
+          minimum: 0
+          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
+        total:
+          type:
+          - number
+          - 'null'
+          example: 115.5
+          format: float
+          minimum: 0
+          description: The total price of the product including the finance charge.
+    FinanceEstimateTaxOutput:
+      type: array
+      items:
+        properties:
+          amount:
+            allOf:
+            - $ref: '#/components/schemas/FeeAmount'
+            example: 4015.54
+            description: "Total amount for this tax.  \n**Note**: For product specific taxes see `selectedProducts.tax`.  \nFor Total taxes see `pricingStack.totalTaxes`.\n"
+          code:
+            type: string
+            enum:
+            - TAX
+            - TAX_FEE
+            - OTHER
+            example: OTHER
+          name:
+            type: string
+            description: "The name of the tax.  \n**Note**: if \"Total Taxes\" value is received, it is the total tax amount for the vehicle. Does not include product taxes.\n"
+            example: Total Taxes
+          taxableAmount:
+            $ref: '#/components/schemas/TaxableAmount'
+          taxLineItems:
+            $ref: '#/components/schemas/TaxLineItems'
+    schemas-RebateInput:
+      type: object
+      title: Rebate
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 1
+          description: Amount value.
+          example: 2499.99
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate.
+          example: Veterans only Rebate
+        isDiscount:
+          type: boolean
+          default: false
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+        isQualifiedOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+        name:
+          type: string
+          minLength: 1
+          description: Description of the rebate to be shown to the customer.
+          example: VA Rebate
+        programId:
+          type: string
+          description: Unique identifier for the rebate program. OEM rebates will require this field.
+          example: VA_1234
+    FullVehicle:
+      type: object
+      title: Full Vehicle
+      properties:
+        age:
+          description: Vehicle age.
+          type: string
+          enum:
+          - NEW
+          - CPO
+          - USED
+        bodyType:
+          type: string
+          example: Fastback
+          description: Vehicle body type.
+        color:
+          type: string
+          example: blue
+          description: Vehicle color.
+        dealerRetailPrice:
+          type: integer
+          example: 30995
+          minimum: 1
+          description: The vehicle's price.
+        fuelType:
+          description: Fuel type used by the vehicle engine.
+          type: string
+          default: GASOLINE
+          example: GASOLINE
+          enum:
+          - ELECTRIC
+          - GASOLINE
+          - HYBRID
+        invoice:
+          type: number
+          example: 29850.75
+          format: float
+          minimum: 0
+          description: The initial price for the vehicle from the manufacturer. _Must be a positive number when `age` is `NEW`._
+        make:
+          type: string
+          example: FORD
+          description: Vehicle make.
+          minLength: 1
+        mileage:
+          type: integer
+          example: 35684
+          minimum: 0
+          description: Number of miles (US) or km (Canada) on vehicle. _Required if `age` is `USED` or `CPO`._
+        model:
+          type: string
+          example: Mustang
+          description: Vehicle model.
+          minLength: 1
+        modelCode:
+          type: string
+          example: P8T
+          description: The code for the model provided by the manufacturer. This field is optional but strongly recommended for new vehicles and lease applications since it greatly improves deal accuracy, e.g. determining the correct rebates.
+        msrp:
+          type: number
+          format: float
+          example: 34950.65
+          description: Manufacturer Suggested Retail Price. _Required if `age` is `NEW`._
+        stockNumber:
+          type: string
+          example: FCL1425
+          description: Vehicle stock number in dealer's inventory. Displayed in customer profile page in AutoFi Dealer Portal.
+        trim:
+          type: string
+          example: GT
+          description: Vehicle trim. This field is optional but strongly recommended for lease applications since it greatly improves deal accuracy, e.g. determining the correct rebates.
+        vin:
+          type: string
+          example: 1FATP8FFXJ5139341
+          maxLength: 17
+          minLength: 17
+          pattern: ^[a-zA-Z0-9]{17}$
+          description: Vehicle Identification Number. Must be 17 alphanumeric characters.
+        year:
+          type: integer
+          example: 2020
+          minimum: 1900
+          description: Vehicle year.
+      required:
+      - age
+      - dealerRetailPrice
+      - make
+      - model
+      - vin
+      - year
+    EstimatePaymentFinanceNonOemRebatesInput:
+      title: Non OEM Rebate
+      type: array
+      description: 'Rebates which should be applied to the `FINANCE` payment estimation.
+
+
+        This field can be used to add special rebates that are not available from standard rebate providers: For
+
+        example, government rebates for electric vehicles.
+
+
+        Additionally, the `taxRule` can be used to specify how the rebate should be applied with respect to tax.
+
+        '
+      items:
+        allOf:
+        - $ref: '#/components/schemas/NonOemRebateInput'
+      example:
+      - amount: 7500
+        disclaimer: Only applicable at time of purchase for registered dealers.
+        isDiscount: false
+        isPrivateOffer: false
+        isQualifiedOffer: false
+        name: Federal EV Tax Credit
+        taxRule: DEDUCT_AFTER_TAX
+    EstimatesTradeInInput:
+      type: object
+      description: Trade in information.
+      properties:
+        amount:
+          allOf:
+          - $ref: '#/components/schemas/amount'
+        payoff:
+          allOf:
+          - $ref: '#/components/schemas/payoff'
+        ownership:
+          allOf:
+          - $ref: '#/components/schemas/Ownership'
+    EstimatePaymentLeaseRebatesInput:
+      type: array
+      description: Rebates which should be applied to the `LEASE` payment estimation.
+      items:
+        allOf:
+        - $ref: '#/components/schemas/schemas-RebateInput'
+        properties:
+          type:
+            $ref: '#/components/schemas/LeaseRebateTypeInput'
+    TaxLineItems:
+      type: array
+      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" />The breakdown of the tax amount by jurisdiction. Each tax line item contains the tax rate and corresponding amount for each jurisdiction or tax authority.</p>'
+      items:
+        properties:
+          jurisdiction:
+            type: object
+            description: The jurisdiction responsible for the tax line item.
+            properties:
+              type:
+                type: string
+                example: STATE
+                description: Type of jurisdiction.
+                enum:
+                - STATE
+                - CITY
+                - COUNTY
+                - DISTRICT
+              name:
+                type: string
+                example: COLORADO
+                description: Name of the jurisdiction.
+              imposition:
+                type: string
+                example: General Sales and Use Tax
+                description: Name of the tax imposition.
+          tax:
+            type: object
+            description: Tax rate and amount calculated for the jurisdiction.
+            properties:
+              rate:
+                type: number
+                format: float
+                minimum: 0
+                maximum: 1
+                example: 0.029
+                description: Tax rate.
+              amount:
+                type: number
+                format: float
+                minimum: 0
+                example: 995.22
+                description: Tax amount.
+    ProductCategory:
+      type: string
+      title: Product Category
+      description: Product category.
+      example: VSC
+      enum:
+      - GAP_WAIVER
+      - OTHER
+      - VSC
+    monthlyPayment:
+      description: Total monthly payment.
+    FinanceRebateTypeInput:
+      example: CASH
+      description: Default is `CASH`
+      type: string
+      enum:
+      - CASH
+      - FINANCE_RATE
+    AppliedLeasePricingStackFigures:
+      properties:
+        appliedToCap:
+          description: Breakdown of capitalized costs.
+          properties:
+            downPayment:
+              description: Cash applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+          type: object
+        appliedToSigning:
+          description: Breakdown of costs applied at signing.
+          properties:
+            downPayment:
+              description: Cash applied to signing costs.
+              example: 2000
+              format: float
+              type:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to signing costs.
+              example: 2499.99
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to signing costs.
+              example: 3600
+              format: int64
+              type:
+              - number
+              - 'null'
+          type: object
+    VehicleVinOnlyInput:
+      type: object
+      title: VIN Only
+      description: Vehicle Information.
+      required:
+      - vin
+      properties:
+        vin:
+          allOf:
+          - $ref: '#/components/schemas/VinBaseSchema'
+          - example: 1FATP8FFXJ5139341
+            description: Vehicle Identification Number. Must be 17 alphanumeric characters. The vehicle must exist in the dealer's inventory.
+    financeCharge:
+      type:
+      - number
+      - 'null'
+      format: float
+      description: Finance charge calculated based on the `amountFinanced`, `apr` and `termMonths`.
+      example: 345.01
+    IncentiveOption:
+      type: string
+      title: Incentive Option
+      description: The type of incentive the consumer is looking for.
+      default: LOWEST_MONTHLY
+      enum:
+      - LARGEST_REBATE
+      - LOWEST_APR
+      - LOWEST_MONTHLY
+  responses:
+    LeaseEstimate400:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                $ref: '#/components/schemas/ValidationError'
+          example:
+            code: 400
+            message: Bad Request
+            errors:
+            - description: Field annualMileage is required when requestedOfferType is LEASE.
+            - description: 'Field "offerPreferences.annualMileage" is invalid: Must be an integer greater than 0.'
+            - description: Could not get offers with provided mileage. Did you mean to provide an annualMileage from one of the following available mileages? [7500,10500,12000,13500,15000,16500,18000,19500]
+            - description: 'Field "offerPreferences.downPayment" is invalid: Must be an integer greater than or equal to 0.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LARGEST_REBATE"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LOWEST_MONTHLY"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LOWEST_APR"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Value "NOT_AN_INCENTIVE_OPTION_VALUE" does not exist in "IncentiveOption" enum.'
+            - description: 'Field "vehicle.vin" is invalid: Must be 17 alphanumeric characters.'
+            - description: Required field "vehicle.vin" was not provided.
+            - description: Required field "vehicle.msrp" was not provided.
+            - description: Required field "vehicle.invoice" was not provided.
+            - description: Required field "vehicle.year" was not provided.
+            - description: Required field "vehicle.model" was not provided.
+            - description: Required field "vehicle.make" was not provided.
+            - description: Required field "vehicle.dealerRetailPrice" was not provided.
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "NEW"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "USED"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "CPO"?.'
+            - description: 'Field "vehicle.dealerRetailPrice" is invalid: Must be an integer greater than 0.'
+            - description: 'Field "vehicle.year" is invalid: Must be 4 digit integer between 1900 and 2024.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "CASH"?.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "FINANCE_RATE" or "LEASE_RATE"?.'
+            - description: Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "DOC_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "OTHER"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "SHIPPING_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TIRE_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TITLE_REG"?.'
+            - description: Required field "fees[0].name" was not provided.
+            - description: 'Field "fees[0].amount" is invalid: Must be a float greater than or equal to 0.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too high, must be lower than 850.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too low, must be greater than 300.'
+            - description: 'Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799'
+            - description: 'Could not get offers for this vehicle: MAJ6S3JL9MC396793'
+            - description: 'Dealer not found using code: RFTD'
+            - description: 'Dealer is not enabled with code: RFTD'
+    CashEstimate400:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                $ref: '#/components/schemas/ValidationError'
+          example:
+            code: 400
+            message: Bad Request
+            errors:
+            - description: 'Field "vehicle.vin" is invalid: Must be 17 alphanumeric characters.'
+            - description: Required field "vehicle.vin" was not provided.
+            - description: Required field "vehicle.msrp" was not provided.
+            - description: Required field "vehicle.invoice" was not provided.
+            - description: Required field "vehicle.year" was not provided.
+            - description: Required field "vehicle.model" was not provided.
+            - description: Required field "vehicle.make" was not provided.
+            - description: Required field "vehicle.dealerRetailPrice" was not provided.
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "NEW"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "USED"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "CPO"?.'
+            - description: 'Field "vehicle.dealerRetailPrice" is invalid: Must be an integer greater than 0.'
+            - description: 'Field "vehicle.year" is invalid: Must be 4 digit integer between 1900 and 2024.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "CASH"?.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "FINANCE_RATE" or "LEASE_RATE"?.'
+            - description: Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "DOC_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "OTHER"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "SHIPPING_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TIRE_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TITLE_REG"?.'
+            - description: Required field "fees[0].name" was not provided.
+            - description: 'Field "fees[0].amount" is invalid: Must be a float greater than or equal to 0.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too high, must be lower than 850.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too low, must be greater than 300.'
+            - description: 'Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799'
+            - description: 'Could not get offers for this vehicle: MAJ6S3JL9MC396793'
+    FinanceEstimate400:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                $ref: '#/components/schemas/ValidationError'
+          example:
+            code: 400
+            message: Bad Request
+            errors:
+            - description: 'Field "offerPreferences.downPayment" is invalid: Must be an integer greater than or equal to 0.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LARGEST_REBATE"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LOWEST_MONTHLY"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Did you mean the enum value "LOWEST_APR"?.'
+            - description: 'Field "offerPreferences.incentiveOption" is invalid: Value "NOT_AN_INCENTIVE_OPTION_VALUE" does not exist in "IncentiveOption" enum.'
+            - description: 'Field "vehicle.vin" is invalid: Must be 17 alphanumeric characters.'
+            - description: Required field "vehicle.vin" was not provided.
+            - description: Required field "vehicle.msrp" was not provided.
+            - description: Required field "vehicle.invoice" was not provided.
+            - description: Required field "vehicle.year" was not provided.
+            - description: Required field "vehicle.model" was not provided.
+            - description: Required field "vehicle.make" was not provided.
+            - description: Required field "vehicle.dealerRetailPrice" was not provided.
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "NEW"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "USED"?.'
+            - description: 'Field "vehicle.age" is invalid: Did you mean the enum value "CPO"?.'
+            - description: 'Field "vehicle.dealerRetailPrice" is invalid: Must be an integer greater than 0.'
+            - description: 'Field "vehicle.year" is invalid: Must be 4 digit integer between 1900 and 2024.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "CASH"?.'
+            - description: 'Field "rebates[0].type" is invalid: Did you mean the enum value "FINANCE_RATE" or "LEASE_RATE"?.'
+            - description: Could not get offers with provided terms 240. Did you mean to provide one of the following terms? [12,24,36,48,60,72,75,84]
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "DOC_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "OTHER"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "SHIPPING_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TIRE_FEE"?.'
+            - description: 'Field "fees[0].code" is invalid: Did you mean the enum value "TITLE_REG"?.'
+            - description: Required field "fees[0].name" was not provided.
+            - description: 'Field "fees[0].amount" is invalid: Must be a float greater than or equal to 0.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too high, must be lower than 850.'
+            - description: 'Field "applicant.selfReportedCreditScore" is invalid: score is too low, must be greater than 300.'
+            - description: 'Vehicle not found using dealer code: RFRD and vin: MAJ6S3JL9MC396799'
+            - description: 'Could not get offers for this vehicle: MAJ6S3JL9MC396793'
+  securitySchemes:
+    bearerAuth:
+      description: 'Get access to data while protecting your account credentials.
+
+        '
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer {token}

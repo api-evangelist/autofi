@@ -1,0 +1,147 @@
+openapi: 3.2.0
+info:
+  title: AutoFi Dealers API
+  description: "\n# Introduction\n Welcome to the AutoFi REST API. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes, authentication, and verbs.\n\n# HTTP Requests\n### Environments\nEnvironment | URL\n----------------|-------------\nTest Sandbox | https://api-uat.autofi.com\nProduction | https://api.autofi.com\n\n### Request Headers\n\nThe `Content-Type` header for `POST` and `PUT` requests should be set to `application/json` unless otherwise noted.\n\nHeader | Value\n----------------|-------------\nContent-Type | application/json\n\n### Response Headers\nHeader | Value\n----------------|-------------\nX-RateLimit-Limit | Request quota\nX-RateLimit-Reset | UNIX timestamp the request quota will be reset after exceeding it\nX-RateLimit-Remaining | Remaining requests in quota\nRetry-After | Time in seconds to retry after\nX-Response-Time | The time in milliseconds it took to respond to the request\n\n# HTTP Responses\nAutoFi uses standard HTTP response codes to indicate the success or failure of an API request. \n\n## Successful requests\nHTTP requests that are successfully processed returns `2xx` status codes.\n\n| Status code | Description |\n| -- | -- |\n| **200 OK** | The request was successfully processed and requested content is returned in the response body. |\n| **201 Created** | The request was successfully processed and a new resource was created. |\n| **204 No Content** | The request was successfully processed and the response body has no content. |\n\n## Failed Requests\nHTTP requests that are not successfully processed, due to a client or server error, returns `4xx` or `5xx` status codes respectively.\n\n### HTTP 4XX status codes\n| Status code | Description \n| -- | -- |\n| **400 Bad Request** | The request cannot be processed. Typically due to a malformed payload.\n| **401 Unauthorized** | The request has invalid credentials (token).\n| **403 Forbidden** | The request has insufficient privileges.\n| **404 Not Found** | The requested resource could not be found.\n| **405 Method Not Allowed** | The API does not allow this method.\n| **415 Unsupported Media Type** | The payload format is not supported. [AutoFi request headers](#request-headers).\n| **429 Too Many Requests** | There were too many request in a given amount of time.\n\n### Error response definition\nMost types of errors have the following structure:\n| field | Description \n| --- | --- \n| code | reference to the status code of the response\n| message | defines the error type \n| errors | contains an array of objects with the description for an error or multiple errors generated.\n\n### Error Types\n\n`4xx` Errors can be thrown for different reasons. The following section describes common shapes for the error objects returned.\n\n#### Validation Errors\nValidation errors return a `400` status code indicating a `Bad Request`.\n\n| Parameter type | Description \n| --- | --- \n| string | `dob`, `email`, `phone`, etc., have formats and possibly character restrictions which must be observed. e.g. `phone` must be a 10 character long string that contains only numbers.\n| number | `apr`, `downPayment`, `term`, etc., have range requirements which must be observed. e.g. `apr` must be a number between [0...1]. \n| integer | `timeInMonths`, `monthlyPayment`, `year`, etc., have range requirements which must be observed.  \n\n\n> #### Example Response `400 Bad Request`\n>  ```json\n> {\n>   \"code\": 400,\n>   \"message\": \"Validation Error\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Required field \\\"applicant\\\" was not provided.\"\n>       },\n>       {\n>         \"description\": \"Field \\\"cosigner.email\\\" is invalid: io.\"\n>       }\n>   ]\n> }\n>  ```\n\n\n#### Authorization Errors\nAuthorization errors return a `401` status code indicating a `Unauthorized`.\nMost endpoints will return some of the following errors in case of an invalid\n(malformed or expired) or absent authorization token, indicating that a new \ntoken must be requested.\n\n> #### Example Response `401 `\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: invalid token\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: No authorization token was found\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: Format is Authorization: Bearer [token]\"\n> }\n>  ```\n>  ```json\n> {\n>     \"error\": \"UnauthorizedError: jwt malformed\"\n> }\n>  ```\n\n#### Not Found Errors\nNot Found errors return a `404` status code indicating a `Not Found`.\n\n> #### Example Response `404 Not found`\n>  ```json\n> {\n>     \"error\": \"Error: Not Found\"\n> }\n>  ```\n\n#### Rate Limiting\nIf the server is receiving an excessive amount of requests from a \nparticular user, it may return errors with a `429` status code \nindicating `Too many requests`.\n\n> #### Example Response `429 Too many requests`\n>  ```json\n> {\n>   \"code\": 429,\n>   \"message\": \"Account limit exceeded.\",\n> }\n>  ```\n\n\n### HTTP 5XX status codes\n| Http Status | Description |\n| -- | -- |\n| **500 Internal Server Error** | An unexpected error occurred, preventing successfully processing the request. |\n| **503 Service Unavailable** | An AutoFi service is unavailable, preventing successfully processing the request. |   \n\n> See the [Hypertext Transfer Protocol (HTTP)](https://datatracker.ietf.org/doc/html/rfc7231) or the [MDN docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for more details.\n\n### Error Type\n\n#### 503 Service Unavailable\nService unavailable error is returned when our servers is not available to process and return a response.\n\n> #### Example Response `503 service unavailable`\n>  ```json\n> {\n>   \"code\": 503,\n>   \"message\": \"Service Unavailable\",\n>   \"errors\": [\n>       {\n>         \"description\": \"Service Unavailable\"\n>       },\n>   ]\n> }\n>  ```\n"
+  version: 1.0.0
+  x-logo:
+    url: https://app.autofi.com/images/email-autofi-logo.png
+    backgroundColor: '#FFFFFF'
+    altText: AutoFi
+    href: /
+servers:
+- url: https://api.autofi.com
+  description: Production server
+- url: https://api-uat.autofi.com
+  description: Sandbox server
+security:
+- bearerAuth: []
+tags:
+- name: Dealers
+  description: 'A `dealer` is a required entity when requesting to create a loan application. If the dealer does not exist you need to first create the `dealer` to acquire the unique `dealer code` from AutoFi.
+
+    '
+paths:
+  /v1/dealer/lookup:
+    post:
+      security:
+      - bearerAuth:
+        - lookup:dealers
+      summary: Lookup AutoFi dealers
+      tags:
+      - Dealers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - brand
+              - oemSalesCodes
+              properties:
+                brand:
+                  allOf:
+                  - $ref: '#/components/schemas/brand'
+                oemSalesCodes:
+                  type: array
+                  description: External dealer code assigned by the OEM.
+                  items:
+                    allOf:
+                    - $ref: '#/components/schemas/oemSalesCode'
+      responses:
+        '200':
+          description: Dealer lookup successfully executed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealerLookup'
+        '400':
+          $ref: '#/components/responses/DealerLookup400'
+components:
+  schemas:
+    OemDealerInfo:
+      type:
+      - object
+      - 'null'
+      properties:
+        code:
+          type:
+          - string
+          - 'null'
+          description: AutoFi internal dealer code.
+        name:
+          type:
+          - string
+          - 'null'
+          description: Dealer name.
+        oemSalesCode:
+          type:
+          - string
+          - 'null'
+          description: External dealer code assigned by the OEM.
+    code:
+      type: integer
+      description: HTTP status code.
+    oemSalesCode:
+      type:
+      - string
+      - 'null'
+      description: External dealer code assigned by the OEM.
+    message:
+      type: string
+      description: HTTP status description.
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+    DealerLookup:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: OEM brand.
+        dealers:
+          type: array
+          description: List of dealers found.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/OemDealerInfo'
+    brand:
+      type: string
+      description: OEM brand.
+    ValidationError:
+      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
+      allOf:
+      - $ref: '#/components/schemas/errors'
+  responses:
+    DealerLookup400:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                $ref: '#/components/schemas/ValidationError'
+          example:
+            code: 400
+            message: Validation Error
+            errors:
+            - description: 'The brand was not found: RANDOM CARS INCORPORATED.'
+            - description: 'Field "" is invalid: String cannot represent a non string value: 1.'
+            - description: Variable "$brand" of required type "String!" was not provided.
+  securitySchemes:
+    bearerAuth:
+      description: 'Get access to data while protecting your account credentials.
+
+        '
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer {token}
