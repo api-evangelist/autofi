@@ -1,0 +1,35 @@
+{
+  "provider": "autofi",
+  "sources": [
+    "_original/autofi-api-openapi.yml"
+  ],
+  "outputs": [
+    "autofi-authorization-api-openapi.yml",
+    "autofi-calculate-payment-api-openapi.yml",
+    "autofi-dealers-api-openapi.yml",
+    "autofi-dealmaker-api-openapi.yml",
+    "autofi-loan-applications-api-openapi.yml",
+    "autofi-prequalification-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "autofi-api-openapi.yml: upgraded openapi 3.0.0 -> OpenAPI 3.2.0",
+    "autofi-api-openapi.yml: declared missing tag: Calculate Payment",
+    "autofi-api-openapi.yml: declared missing tag: Dealmaker",
+    "autofi-api-openapi.yml: declared missing tag: Prequalification",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "_original/autofi-openapi.json: archived document superseded by a larger archived document",
+    "autofi-authorization-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "autofi-calculate-payment-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "autofi-dealers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "autofi-dealmaker-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "autofi-loan-applications-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "autofi-prequalification-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}
