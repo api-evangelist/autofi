@@ -106,6 +106,9 @@ apis:
     url: mcp/autofi-tool-crosswalk.yml
   - type: WellKnown
     url: well-known/autofi-well-known.yml
+  x-surface: platform-generated
+  x-platform: wordpress
+  x-platform-surface: mcp-plugin
 - aid: autofi:autofi-authorization-api
   name: AutoFi Authorization API
   description: >-
