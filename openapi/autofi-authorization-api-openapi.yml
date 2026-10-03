@@ -68,6 +68,16 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    AccessToken:
+      type: object
+      required:
+      - clientId
+      - clientSecret
+      properties:
+        clientId:
+          type: string
+        clientSecret:
+          type: string
     AuthorizationError:
       type: object
       description: Access token is missing or invalid
@@ -82,16 +92,6 @@ components:
           type: string
           default: null
           description: A placeholder for future expansion
-    AccessToken:
-      type: object
-      required:
-      - clientId
-      - clientSecret
-      properties:
-        clientId:
-          type: string
-        clientSecret:
-          type: string
   securitySchemes:
     bearerAuth:
       description: 'Get access to data while protecting your account credentials.
