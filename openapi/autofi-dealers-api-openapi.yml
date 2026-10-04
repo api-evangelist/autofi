@@ -61,33 +61,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    code:
-      type: integer
-      description: HTTP status code.
-    oemSalesCode:
-      type:
-      - string
-      - 'null'
-      description: External dealer code assigned by the OEM.
-    DealerLookup:
-      type: object
-      properties:
-        brand:
-          type: string
-          description: OEM brand.
-        dealers:
-          type: array
-          description: List of dealers found.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/OemDealerInfo'
-    brand:
-      type: string
-      description: OEM brand.
-    ValidationError:
-      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
-      allOf:
-      - $ref: '#/components/schemas/errors'
     errors:
       type: array
       items:
@@ -115,9 +88,36 @@ components:
           - string
           - 'null'
           description: External dealer code assigned by the OEM.
+    DealerLookup:
+      type: object
+      properties:
+        brand:
+          type: string
+          description: OEM brand.
+        dealers:
+          type: array
+          description: List of dealers found.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/OemDealerInfo'
+    ValidationError:
+      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
+      allOf:
+      - $ref: '#/components/schemas/errors'
     message:
       type: string
       description: HTTP status description.
+    oemSalesCode:
+      type:
+      - string
+      - 'null'
+      description: External dealer code assigned by the OEM.
+    brand:
+      type: string
+      description: OEM brand.
+    code:
+      type: integer
+      description: HTTP status code.
   responses:
     DealerLookup400:
       description: BadRequest

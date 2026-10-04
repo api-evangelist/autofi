@@ -134,69 +134,34 @@ paths:
       operationId: postV1Prequalification
       x-operation-id-source: derived
 components:
-  schemas:
-    code:
-      type: integer
-      description: HTTP status code.
-    EmailInput:
-      type: string
-      example: fake@example.com
-      format: email
-      minLength: 1
-      title: Email
-      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
-    ApplicantFullNameInput:
-      allOf:
-      - $ref: '#/components/schemas/ApplicantBaseNameInput'
-      title: Name
-      properties:
-        middle:
-          description: Middle name
-          example: Alejandra
-          type: string
-        suffix:
-          description: Suffix indicating generational title
-          example: JR
-          type: string
-          enum:
-          - JR
-          - SR
-          - I
-          - II
-          - III
-          - IV
-          - V
-    errors:
-      type: array
-      items:
-        properties:
-          description:
-            type: string
-            description: Error description.
-    ApplicantBaseNameInput:
-      title: Name
-      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
-      type: object
-      required:
-      - first
-      - last
-      properties:
-        first:
-          description: First name
-          example: Mrs. Jamie-Lynn
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-        last:
-          description: Last name
-          example: O'Rourke-Van Winkle
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-    message:
-      type: string
-      description: HTTP status description.
   responses:
+    BadRequestPrequal:
+      description: BadRequest
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                $ref: '#/components/schemas/code'
+              message:
+                $ref: '#/components/schemas/message'
+              errors:
+                description: "Array of validation errors found in the payload that include general type validation as well as any issues with the data surfaced by the credit bureau:\n - Invalid Address\n - Required field not provided\n - Field can not be null\n - Field must be an object\n - Field is not a defined field\n - Field is invalid\n"
+                allOf:
+                - $ref: '#/components/schemas/errors'
+            example:
+              code: 400
+              message: Bad Request
+              errors:
+              - description: 'Something went wrong: Invalid Address'
+              - description: Required field "applicant" was not provided.
+              - description: Field "applicant.phone" can not be null.
+              - description: Field "applicant.name" must be an object.
+              - description: Field "someName" is not a defined field.
+              - description: 'Field "applicant.email" is invalid: Email cannot represent an invalid email address value: notAnEmailAddress.'
+              - description: 'Field "applicant.employmentIncome" is invalid: Must be a float greater than or equal to 0.'
+              - description: 'STREETNAME: Required Data Not Entered'
     NotFoundPrequal:
       description: NotFound
       content:
@@ -249,33 +214,68 @@ components:
               - description: Credit Service Unavailable (7110).
               - description: Credit Service Unavailable (7199).
               - description: Credit Service Unavailable (7200).
-    BadRequestPrequal:
-      description: BadRequest
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                $ref: '#/components/schemas/code'
-              message:
-                $ref: '#/components/schemas/message'
-              errors:
-                description: "Array of validation errors found in the payload that include general type validation as well as any issues with the data surfaced by the credit bureau:\n - Invalid Address\n - Required field not provided\n - Field can not be null\n - Field must be an object\n - Field is not a defined field\n - Field is invalid\n"
-                allOf:
-                - $ref: '#/components/schemas/errors'
-            example:
-              code: 400
-              message: Bad Request
-              errors:
-              - description: 'Something went wrong: Invalid Address'
-              - description: Required field "applicant" was not provided.
-              - description: Field "applicant.phone" can not be null.
-              - description: Field "applicant.name" must be an object.
-              - description: Field "someName" is not a defined field.
-              - description: 'Field "applicant.email" is invalid: Email cannot represent an invalid email address value: notAnEmailAddress.'
-              - description: 'Field "applicant.employmentIncome" is invalid: Must be a float greater than or equal to 0.'
-              - description: 'STREETNAME: Required Data Not Entered'
+  schemas:
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+    ApplicantFullNameInput:
+      allOf:
+      - $ref: '#/components/schemas/ApplicantBaseNameInput'
+      title: Name
+      properties:
+        middle:
+          description: Middle name
+          example: Alejandra
+          type: string
+        suffix:
+          description: Suffix indicating generational title
+          example: JR
+          type: string
+          enum:
+          - JR
+          - SR
+          - I
+          - II
+          - III
+          - IV
+          - V
+    EmailInput:
+      type: string
+      example: fake@example.com
+      format: email
+      minLength: 1
+      title: Email
+      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
+    message:
+      type: string
+      description: HTTP status description.
+    ApplicantBaseNameInput:
+      title: Name
+      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
+      type: object
+      required:
+      - first
+      - last
+      properties:
+        first:
+          description: First name
+          example: Mrs. Jamie-Lynn
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+        last:
+          description: Last name
+          example: O'Rourke-Van Winkle
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+    code:
+      type: integer
+      description: HTTP status code.
   securitySchemes:
     bearerAuth:
       description: 'Get access to data while protecting your account credentials.

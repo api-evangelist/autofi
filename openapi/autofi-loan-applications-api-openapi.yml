@@ -207,6 +207,84 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    FeeCodeInput:
+      example: SHIPPING_FEE
+      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
+      type: string
+      enum:
+      - DOC_FEE
+      - OTHER
+      - SHIPPING_FEE
+      - TIRE_FEE
+      - TITLE_REG
+    LoanApplicationDealerInput:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Identification assigned to dealer by AutoFi. Created via the `POST /dealer` endpoint (if submitting applications for multiple dealers) or will be provided by AutoFi.
+        middleman:
+          allOf:
+          - $ref: '#/components/schemas/DecisionMiddlemen'
+          description: Portal used to submit the credit applications to the lenders.
+        middlemanId:
+          type: string
+          description: The dealer id used in the middleman portal on whose behalf the application will be submitted to the lender.
+        state:
+          type: string
+          description: The dealer's state which the book values for collateral valuation are based on.
+      required:
+      - code
+    OtherIncomeItemInput:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 1
+          format: float
+          minimum: 0
+        source:
+          type: string
+          description: 'e.g.
+
+
+            - Aid for Dependent Children
+
+            - Child Support
+
+            - Cost of Living Allowance (COLA)
+
+            - Disability
+
+            - Family Subsistence Supplemental Allowance (FSSA)
+
+            - Housing Allowances
+
+            - Military Basic Allowance for Subsistence (BAS)
+
+            - Municipal Bond Interest
+
+            - Other Non-Taxable Sources of Income
+
+            - Other
+
+            - Public Assistance
+
+            - Railroad Pension
+
+            - Second Employer
+
+            - Social Security Benefits
+
+            - Tips
+
+            - Workman''s Compensation
+
+            '
+          example: Social Security Benefits
+      required:
+      - amount
+      - source
     SimulatedDecisionState:
       type: string
       title: Decision State
@@ -219,301 +297,199 @@ components:
       - APPROVED_WITH_COUNTEROFFER
       - CONDITIONAL
       - CONDITIONAL_WITH_COUNTEROFFER
-    LoanApplicationTradeInInput:
-      type: object
+    SimulateEnvironment:
+      type: string
+      title: Environment
+      description: Use `LENDER_TEST` to test End to End with R1/DT Lender Test Environment. Use `AUTOFI_TEST` to test with the AutoFi Test Environment (requires an array of `decisions` to be simulated). Defaults to `AUTOFI_TEST`.
+      example: AUTOFI_TEST
+      enum:
+      - LENDER_TEST
+      - AUTOFI_TEST
+    CdkDmsExternalResource:
+      description: 'External resources associated with the loan application within the CDK Dealer Management System. This field is only present in the response when an offer has been accepted on the loan application and linked in the CDK DMS.
+
+        '
+      type:
+      - object
+      - 'null'
       properties:
-        amount:
-          type: number
-          format: float
-          example: 5000.75
-          description: The difference between the value of the vehicle and payoff amount i.e. `bookValue` - `payoff`.
-        bookValue:
-          type: number
-          format: float
-          deprecated: true
-          description: _Deprecated - The estimated market value of the vehicle. If submitted, this field is ignored._
-        class:
-          type: string
-        condition:
-          allOf:
-          - $ref: '#/components/schemas/TradeInCondition'
-        leaseAnnualMiles:
-          type: integer
-          example: 15000
-          description: _Required if terminatingLease is true._ Miles a leased vehicle can be driven annually before the penalty is triggered.
-          exclusiveMinimum: 0
-        leaseMonthlyPayment:
-          type: number
-          format: float
-          example: 350.45
-          description: _Required if `terminatingLease` is true._ Monthly payment for leased vehicle.
-        leaseNumRemainingPayments:
-          type: integer
-          example: 6
-          minimum: 0
-          description: _Required if `terminatingLease` is true._ How many months are left until the lease terms are fulfilled.
-        leasePenaltyPerExcessMile:
-          type: number
-          format: float
-          example: 1.5
-          description: _Required if `terminatingLease` is true._ Penalty for driving more than leaseAnnualMiles per year. Calculated on a per mile basis.
-        leaseTerm:
-          type: integer
-          example: 24
-          description: _Required if `terminatingLease` is true._ Length of lease term in months.
-          exclusiveMinimum: 0
-        make:
-          type: string
-          minLength: 1
-          example: FORD
-          description: Trade-in vehicle make.
-        mileage:
-          type: integer
-          example: 40000
-          minimum: 0
-          description: Number of miles (US) or km (Canada) on vehicle.
-        model:
-          type: string
-          minLength: 1
-          example: Mustang
-          description: Trade-in vehicle model.
-        ownership:
-          type: string
-        payoff:
-          type: number
-          example: 3500.75
-          format: float
-          maximum: 999999
-          minimum: 0
-          description: The payoff amount the customer needs to pay to satisfy the terms of their vehicle loan.
-        series:
-          type: string
-        style:
-          type: string
-        terminatingLease:
-          type: boolean
-          description: Determines whether the trade-in is a leased vehicle.
-        vin:
-          type: string
-          example: 1FATP8FFXJ5139341
-          maxLength: 17
-          minLength: 17
-          pattern: ^[a-zA-Z0-9]{17}$
-          description: Trade-in vehicle Identification Number. Must be 17 alphanumeric characters.
-        year:
-          type: integer
-          example: 2018
-          minimum: 1990
-          description: Trade-in vehicle year.
-        financeCompany:
-          description: The finance company (lienholder) on the trade-in.
-          type: object
+        customer:
+          type:
+          - object
+          - 'null'
           properties:
-            name:
+            id:
+              description: Unique identifier for the `customer` record within the CDK system.
+              example: '18185'
               type: string
-              example: FMCC
-              description: Name of the finance company.
-      required:
-      - amount
-      - make
-      - model
-      - payoff
-      - year
-    FeePlacement:
-      type: string
-      enum:
-      - GROSS_CAP
-      - DUE_AT_SIGNING
-      description: '`GROSS_CAP` means that the fee will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the fee will be added to the Due at Signing Calculation and thus deducted from the down payment.'
-    ProgramId:
-      type: string
-      description: Unique identifier for the rebate program. When submitting a rebate with isQualifiedOffer as `true` the programId is required.
-      example: VA_1234
-    DecisioningVehicleInput:
-      type: object
-      properties:
-        age:
-          allOf:
-          - $ref: '#/components/schemas/InputVehicleAge'
-        bodyType:
-          type: string
-          example: Fastback
-          description: Vehicle body type.
-        color:
-          type: string
-          example: blue
-          description: Vehicle color.
-        dealerRetailPrice:
-          type: integer
-          example: 30995
-          description: The vehicle's price.
-          exclusiveMinimum: 0
-        invoice:
-          type: number
-          example: 29850.75
-          format: float
-          minimum: 0
-          description: The initial price for the vehicle from the manufacturer. _Must be a positive number when `age` is `NEW`._
-        maintenanceCosts:
-          type: object
-        make:
-          type: string
-          example: FORD
-          description: Vehicle make.
-        mileage:
-          type: integer
-          example: 35684
-          minimum: 0
-          description: Number of miles (US) or km (Canada) on vehicle. _Required if `age` is `USED` or `CPO`._
-        model:
-          type: string
-          example: Mustang
-          description: Vehicle model.
-        modelCode:
-          type: string
-          example: P8T
-          description: The code for the model provided by the manufacturer. This field is optional but recommended for new vehicles since it improves accuracy, e.g. determining the correct rebates.
-        msrp:
-          type: number
-          format: float
-          example: 34950.65
-          description: Manufacturer Suggested Retail Price. _Required if `age` is `NEW`._
-        stockNumber:
-          type: string
-          example: FCL1425
-          description: Vehicle stock number in dealer's inventory. Displayed in customer profile page in AutoFi Dealer Portal.
-        trim:
-          type: string
-          description: Vehicle trim.
-        vin:
-          type: string
-          example: 1FATP8FFXJ5139341
-          maxLength: 17
-          minLength: 17
-          pattern: ^[a-zA-Z0-9]{17}$
-          description: Vehicle Identification Number. Must be 17 alphanumeric characters.
-        year:
-          type: integer
-          example: 2020
-          minimum: 1900
-          description: Vehicle year.
-        photoUrl:
-          type: string
-          example: https://example.com/my/vehicle/photo.jpg
-          format: uri
-          minLength: 1
-          description: A valid URL to be used for showing the vehicle within the offer experience and customer profile page in AutoFi Dealer Portal.
-        fuelType:
-          description: Fuel type used by the vehicle engine.
-          type: string
-          default: GASOLINE
-          example: GASOLINE
-          enum:
-          - ELECTRIC
-          - GASOLINE
-          - HYBRID
-      required:
-      - age
-      - dealerRetailPrice
-      - make
-      - model
-      - vin
-      - year
-    FeeCodeInput:
-      example: SHIPPING_FEE
-      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
-      type: string
-      enum:
-      - DOC_FEE
-      - OTHER
-      - SHIPPING_FEE
-      - TIRE_FEE
-      - TITLE_REG
-    IsSubvented:
-      type: boolean
-      description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
-    TaxName:
-      type: string
-      description: "The name of the tax.  \n**Note**: if \"Total Taxes\" value is received, it is the total tax amount for the vehicle. Does not include product taxes.\n"
-    schemas-FinanceFees:
+        deal:
+          type:
+          - object
+          - 'null'
+          properties:
+            id:
+              description: Unique identifier for the `deal` record within the CDK system.
+              type: string
+              example: '50512'
+        dealer:
+          type:
+          - object
+          - 'null'
+          properties:
+            id:
+              description: Unique identifier for the `dealer` resource within the CDK system.
+              type: string
+              example: 3PADEVWB
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+    ValidationError:
+      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
+      allOf:
+      - $ref: '#/components/schemas/errors'
+    Apr:
+      type: number
+      format: float
+      example: 0.02
+      description: Annual percentage rate in decimals e.g. if the apr is 2% this should be 0.02
+    FinanceTaxes:
       type: array
       title: Finance
       items:
         properties:
           amount:
-            $ref: '#/components/schemas/FeeAmount'
-          code:
-            $ref: '#/components/schemas/FeeCode'
+            $ref: '#/components/schemas/TaxAmount'
           name:
-            $ref: '#/components/schemas/FeeName'
-    AppliedLeasePricingStackFigures:
+            $ref: '#/components/schemas/TaxName'
+          taxableAmount:
+            $ref: '#/components/schemas/TaxableAmount'
+          taxLineItems:
+            $ref: '#/components/schemas/TaxLineItems'
+    LoanApplicationData:
+      type: object
       properties:
-        appliedToCap:
-          description: Breakdown of capitalized costs.
-          properties:
-            downPayment:
-              description: Cash applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
-            rebates:
-              description: Rebates applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
-            tradeIn:
-              description: Trade-in applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
+        afExperienceCompleted:
+          type:
+          - boolean
+          - 'null'
+          description: This flag is `true` when a customer has completed the last step in the AutoFi experience.
+        appliedFees:
+          description: Fees applied to the loan application
+          anyOf:
+          - $ref: '#/components/schemas/schemas-FinanceFees'
+          - $ref: '#/components/schemas/LeaseFees'
+        appliedTaxes:
+          description: Taxes applied to the loan application
+          anyOf:
+          - $ref: '#/components/schemas/FinanceTaxes'
+          - $ref: '#/components/schemas/LeaseTaxes'
+        creditScore:
+          type: integer
+          minimum: 300
+          maximum: 999
+          description: Credit score. Number between 300 and 999.
+        decisions:
+          type:
+          - array
+          - 'null'
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Decision'
+        loanApplicationId:
+          type: string
+        offerAvailable:
+          type:
+          - boolean
+          - 'null'
+          description: This flag is `true` if an offer is available to be displayed to a consumer.
+        offerPreferences:
           type: object
-        appliedToSigning:
-          description: Breakdown of costs applied at signing.
           properties:
+            annualMileage:
+              type:
+              - integer
+              - 'null'
+              example: 1
+              minimum: 1
+              description: Miles the consumer would prefer when leasing a vehicle
+            apr:
+              type: number
+              format: float
+              description: Annual percentage rate in decimals
             downPayment:
-              description: Cash applied to signing costs.
-              example: 2000
-              format: float
-              type:
-              - number
-              - 'null'
-            rebates:
-              description: Rebates applied to signing costs.
-              example: 2499.99
-              format: float
-              type:
-              - number
-              - 'null'
-            tradeIn:
-              description: Trade-in applied to signing costs.
-              example: 3600
-              format: int64
-              type:
-              - number
-              - 'null'
+              type: integer
+              example: 1
+              minimum: 0
+              description: Amount the consumer is putting down towards the vehicle
+            incentiveOption:
+              allOf:
+              - $ref: '#/components/schemas/IncentiveOption'
+              description: 'Default: `LOWEST_MONTHLY`'
+            isSubvented:
+              type: boolean
+              description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
+            requestedOfferType:
+              allOf:
+              - $ref: '#/components/schemas/CreditOfferType'
+              description: How the customer is financing the vehicle - "FINANCE" or "LEASE".
+            term:
+              type: integer
+              example: 1
+              minimum: 1
+              description: Length of term in months
+        pricingStack:
+          description: Pricing information for a loan application. Only available after the state is `ACCEPTED`.
+          oneOf:
+          - $ref: '#/components/schemas/FinancePricingStack'
+          - $ref: '#/components/schemas/LeasePricingStack'
+        referenceId:
+          type:
+          - string
+          - 'null'
+          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
+        selectedProducts:
+          type: array
+          description: Selected products.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/BaseSelectedProduct'
+            type: object
+            properties:
+              monthlyPayment:
+                type:
+                - number
+                - 'null'
+                example: 1
+                format: float
+                minimum: 0
+                description: Monthly payment over the finance term including the finance charge.
+        state:
+          description: '<p>The current state of the loan application within the decisioning flow. The various states are detailed in the state diagram below.</p>
+
+            <img src="/diagrams/loanApplicationStates-API.mmd.svg" alt="Loan Application State Diagram" style="width: 100%; max-width: 600px" />
+
+            '
+          type:
+          - string
+          - 'null'
+          enum:
+          - ACCEPTED
+          - APPROVED
+          - BEGAN_APPLICATION
+          - DECLINED
+          - ERROR
+          - FI_COMPLETED
+          - PENDING
+          - SUBMITTED
+        tradeIn:
+          description: Trade in information.
           type: object
-    Relationship:
-      example: SPOUSE
-      description: The cosigner's relationship with the primary applicant. Use `PARENT` when the cosigner is the applicant's parent. Use `RESIDESWITH` when there is no familial relationship but the applicant and cosigner live together.
-      type: string
-      enum:
-      - RESIDESWITH
-      - PARENT
-      - OTHER
-      - SPOUSE
-    PhoneInput:
-      type: string
-      example: '5554443333'
-      maxLength: 10
-      minLength: 10
-      pattern: ^[2-9][0-9]{9}$
-      description: A valid 10 digit phone number.
+          allOf:
+          - $ref: '#/components/schemas/TradeIn'
     Decision:
       type: object
       properties:
@@ -645,34 +621,45 @@ components:
               items:
                 type: string
                 example: Applicant will need to show a valid government issued photo ID card for date of birth verification
-    price:
-      type: number
-      example: 100
-      format: float
-      minimum: 0
-      description: Pretax price.
-    InputVehicleAge:
-      description: Vehicle age.
-      type: string
-      enum:
-      - NEW
-      - CPO
-      - USED
-    FinanceFees:
+    LeaseFees:
       type: array
+      title: Lease
       items:
-        allOf:
-        - $ref: '#/components/schemas/FeeInput'
         properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
           code:
-            $ref: '#/components/schemas/schemas-FeeCodeInput'
-          isTaxable:
-            description: 'Default: `false` <br> Applies only when requested offerType is `FINANCE`.'
-            deprecated: true
-      example:
-        amount: 249.99
-        code: SHIPPING_FEE
-        name: Shipping fee
+            $ref: '#/components/schemas/FeeCode'
+          feePlacement:
+            $ref: '#/components/schemas/FeePlacement'
+          name:
+            $ref: '#/components/schemas/FeeName'
+    RebateBaseInput:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: 2499.99
+          format: float
+          description: The rebate amount.
+          exclusiveMinimum: 0
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
+          example: Rebate Disclaimer
+        isDiscount:
+          type: boolean
+          default: false
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
+        isQualifiedOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+        name:
+          type: string
+          minLength: 1
+          description: Description of the rebate to be shown to the customer.
+          example: VA Rebate
     BasePricingStack:
       type: object
       description: Fields in common for FINANCE and LEASE.
@@ -708,10 +695,6 @@ components:
           format: float
           example: 5000.75
           description: The difference between the value of the trade-in vehicle and its payoff amount. Will always be 0 if the `isApplied` field of the trade-in vehicle is `false`.
-    FeeName:
-      type: string
-      description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
-      example: Shipping fee.
     ApplicantEmploymentInput:
       type: object
       properties:
@@ -756,222 +739,6 @@ components:
       required:
       - employmentStatus
       - timeInMonths
-    RebateBaseInput:
-      type: object
-      properties:
-        amount:
-          type: number
-          example: 2499.99
-          format: float
-          description: The rebate amount.
-          exclusiveMinimum: 0
-        disclaimer:
-          type: string
-          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
-          example: Rebate Disclaimer
-        isDiscount:
-          type: boolean
-          default: false
-          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
-        isQualifiedOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
-        name:
-          type: string
-          minLength: 1
-          description: Description of the rebate to be shown to the customer.
-          example: VA Rebate
-    DecisioningCoApplicantInput:
-      type: object
-      properties:
-        name:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantFullNameInput'
-        address:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantAddressInput'
-          - description: Cosigner residence information.
-          - example:
-              street: 4390 Norris Ln
-              street2: ''
-              city: Detroit
-              state: MI
-              zip: '48208'
-              residenceType: BUYING
-              residenceTimeInMonths: 60
-              residenceMonthlyPayment: 2000
-        previousAddress:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantAddressInput'
-          - description: 'Cosigner previous residence information. Recommended when the cosigner has lived at the current
-
-              address for less than 2 years.
-
-              '
-          - example:
-              street: 2198 Dorothy Tr
-              street2: ''
-              city: Detroit
-              state: MI
-              zip: '48216'
-              residenceType: OTHER
-              residenceTimeInMonths: 12
-              residenceMonthlyPayment: 0
-        phone:
-          type: string
-          example: '5554443333'
-          maxLength: 10
-          minLength: 10
-          pattern: ^[2-9][0-9]{9}$
-          description: A valid 10 digit phone number.
-        email:
-          type: string
-          example: fake@example.com
-          format: email
-          minLength: 1
-          description: A valid email address.
-        ssn:
-          type: string
-          example: '666554444'
-          maxLength: 9
-          minLength: 9
-          pattern: ^\d{9}$
-          description: 'Social Security Number / ITIN in US. Note: The application is only submitted to lenders that support ITIN.
-
-            '
-        maritalStatus:
-          allOf:
-          - $ref: '#/components/schemas/MaritalStatus'
-        educationLevel:
-          allOf:
-          - $ref: '#/components/schemas/EducationLevel'
-        employment:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantEmploymentInput'
-        previousEmployment:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantEmploymentInput'
-        dob:
-          type: string
-          format: date
-          pattern: ^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$
-          example: '1990-01-30'
-          description: Date of Birth `YYYY-MM-DD`. Must be older than 18 and younger than 120.
-        incomeReported:
-          type: number
-          format: float
-          deprecated: true
-          description: Total gross monthly income from employment and other sources. _Deprecated - Use `employmentIncome` and `otherIncome` fields instead._
-        employmentIncome:
-          type: number
-          format: float
-          example: 10000
-          description: Gross monthly income from employment. _Required if `employmentStatus` is "EMPLOYED", "SELF_EMPLOYED" or "MILITARY"._
-        otherIncome:
-          type: array
-          description: Monthly income from sources other than employment.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/OtherIncomeItemInput'
-        relationship:
-          deprecated: true
-          allOf:
-          - $ref: '#/components/schemas/Relationship'
-          description: _Deprecated - Use `relationshipCode` instead._
-        relationshipCode:
-          allOf:
-          - $ref: '#/components/schemas/Relationship'
-      required:
-      - name
-      - address
-      - phone
-      - email
-      - ssn
-      - employment
-      - dob
-    TaxLineItems:
-      type: array
-      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" />The breakdown of the tax amount by jurisdiction. Each tax line item contains the tax rate and corresponding amount for each jurisdiction or tax authority.</p>'
-      items:
-        properties:
-          jurisdiction:
-            type: object
-            description: The jurisdiction responsible for the tax line item.
-            properties:
-              type:
-                type: string
-                example: STATE
-                description: Type of jurisdiction.
-                enum:
-                - STATE
-                - CITY
-                - COUNTY
-                - DISTRICT
-              name:
-                type: string
-                example: COLORADO
-                description: Name of the jurisdiction.
-              imposition:
-                type: string
-                example: General Sales and Use Tax
-                description: Name of the tax imposition.
-          tax:
-            type: object
-            description: Tax rate and amount calculated for the jurisdiction.
-            properties:
-              rate:
-                type: number
-                format: float
-                minimum: 0
-                maximum: 1
-                example: 0.029
-                description: Tax rate.
-              amount:
-                type: number
-                format: float
-                minimum: 0
-                example: 995.22
-                description: Tax amount.
-    SimulateEnvironment:
-      type: string
-      title: Environment
-      description: Use `LENDER_TEST` to test End to End with R1/DT Lender Test Environment. Use `AUTOFI_TEST` to test with the AutoFi Test Environment (requires an array of `decisions` to be simulated). Defaults to `AUTOFI_TEST`.
-      example: AUTOFI_TEST
-      enum:
-      - LENDER_TEST
-      - AUTOFI_TEST
-    ValidationError:
-      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
-      allOf:
-      - $ref: '#/components/schemas/errors'
-    ApplicantBaseNameInput:
-      title: Name
-      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
-      type: object
-      required:
-      - first
-      - last
-      properties:
-        first:
-          description: First name
-          example: Mrs. Jamie-Lynn
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-        last:
-          description: Last name
-          example: O'Rourke-Van Winkle
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-    ConsumerUrlSchema:
-      type: string
-      title: Consumer URL
-      example: https://example.com
-      format: uri
-      minLength: 1
-      description: URL to the consumer experience. The url expires 30 days after creation.
     TradeInCondition:
       description: Condition for the trade-in vehicle
       type: string
@@ -981,25 +748,74 @@ components:
       - GOOD
       - POOR
       - VERY_GOOD
-    schemas-tax:
-      type: number
-      example: 1745.25
-      format: float
-      minimum: 0
-      description: The total taxes to be applied (should not include F&I Product taxes).
-    FinanceTaxes:
+    RebateType:
+      example: CASH
+      description: Default is `CASH`.
+      type: string
+      enum:
+      - CASH
+      - FINANCE_RATE
+      - LEASE_RATE
+    TaxPlacement:
+      type: string
+      enum:
+      - BIWEEKLY
+      - CAPITALIZED
+      - DUE_AT_SIGNING
+      - MONTHLY
+      description: '`CAPITALIZED` means that the tax will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the tax will be added to the Due at Signing Calculation and thus deducted from the down payment. `BIWEEKLY` and `MONTHLY` taxes are taxes applied to the biweekly or monthly payments.'
+    schemas-FinanceFees:
       type: array
       title: Finance
       items:
         properties:
           amount:
-            $ref: '#/components/schemas/TaxAmount'
+            $ref: '#/components/schemas/FeeAmount'
+          code:
+            $ref: '#/components/schemas/FeeCode'
           name:
-            $ref: '#/components/schemas/TaxName'
-          taxableAmount:
-            $ref: '#/components/schemas/TaxableAmount'
-          taxLineItems:
-            $ref: '#/components/schemas/TaxLineItems'
+            $ref: '#/components/schemas/FeeName'
+    ApplicantFullNameInput:
+      allOf:
+      - $ref: '#/components/schemas/ApplicantBaseNameInput'
+      title: Name
+      properties:
+        middle:
+          description: Middle name
+          example: Alejandra
+          type: string
+        suffix:
+          description: Suffix indicating generational title
+          example: JR
+          type: string
+          enum:
+          - JR
+          - SR
+          - I
+          - II
+          - III
+          - IV
+          - V
+    SimulatedDecision:
+      title: Simulated Decision
+      properties:
+        decision:
+          $ref: '#/components/schemas/SimulatedDecisionState'
+        delay:
+          type: integer
+          example: 75000
+          description: Specify how long it should take for this simulated decision to return in milliseconds.
+        lender:
+          type: string
+          example: CHASE
+          description: "The lender that decision should be simulated for.\nThese are the lender codes available to use:\n  - ALLY \n  - BOFA \n  - CHASE \n  - EXETER \n  - FIFS  \n  - FMCC \n  - GLS \n  - GMFL \n  - HBAN \n  - LAFSNC \n  - RBC \n  - SANT \n  - SCF \n  - SETF \n  - TRICOR \n  - VROOM \n  - WEST\n"
+        middleman:
+          allOf:
+          - $ref: '#/components/schemas/DecisionMiddlemen'
+          description: The middleman that the decision should be simulated from.
+      required:
+      - decision
+      - lender
     FeeInput:
       type: object
       properties:
@@ -1024,262 +840,300 @@ components:
       required:
       - amount
       - name
-    ProductCategory:
+    TaxItemLease:
+      type: object
+      description: Lease Tax Item.
+      properties:
+        amount:
+          description: Tax item amount.
+          type: number
+          format: float
+        description:
+          description: Tax item description.
+          type: string
+        descriptionI18n:
+          description: Tax item description for locale.
+          type: string
+    EmploymentStatus:
       type: string
-      title: Product Category
-      description: Product category.
-      example: VSC
       enum:
-      - GAP_WAIVER
+      - CONTRACT
+      - EMPLOYED
+      - FULL_TIME
+      - MILITARY
+      - NA
       - OTHER
-      - VSC
-    tax:
-      type: number
-      example: 15.5
-      format: float
-      minimum: 0
-      description: "Tax amount for the product. Defaults to 0.  \n**Notes:** Does not include vehicle taxes.  \n  For vehicle specific taxes see `appliedTaxes.amount`.  \n  For Total taxes see `pricingStack.totalTaxes`.\n"
-    TaxPlacement:
+      - PART_TIME
+      - RETIRED
+      - SELF_EMPLOYED
+      - SEASONAL
+      - STUDENT
+      - TEMPORARY
+      - UNEMPLOYED
+    TaxName:
       type: string
-      enum:
-      - BIWEEKLY
-      - CAPITALIZED
-      - DUE_AT_SIGNING
-      - MONTHLY
-      description: '`CAPITALIZED` means that the tax will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the tax will be added to the Due at Signing Calculation and thus deducted from the down payment. `BIWEEKLY` and `MONTHLY` taxes are taxes applied to the biweekly or monthly payments.'
-    Term:
-      type: integer
-      title: Term
-      description: Length of term in months.
-      example: 24
-      exclusiveMinimum: 0
-    LeaseTaxes:
-      type: array
-      title: Lease
-      items:
-        properties:
-          amount:
-            $ref: '#/components/schemas/FeeAmount'
-          name:
-            $ref: '#/components/schemas/FeeName'
-          taxPlacement:
-            $ref: '#/components/schemas/TaxPlacement'
-    referenceId:
-      type:
-      - string
-      - 'null'
-      title: Product Reference ID
-      example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
-      description: Product identifier used to reference a product within a DMS.
-    CreditOfferType:
-      type: string
-      title: Offer Type
-      description: How the customer is financing the vehicle - `FINANCE` or `LEASE`.
-      example: FINANCE
-      enum:
-      - FINANCE
-      - LEASE
-    ApplicantFullNameInput:
-      allOf:
-      - $ref: '#/components/schemas/ApplicantBaseNameInput'
+      description: "The name of the tax.  \n**Note**: if \"Total Taxes\" value is received, it is the total tax amount for the vehicle. Does not include product taxes.\n"
+    ApplicantBaseNameInput:
       title: Name
-      properties:
-        middle:
-          description: Middle name
-          example: Alejandra
-          type: string
-        suffix:
-          description: Suffix indicating generational title
-          example: JR
-          type: string
-          enum:
-          - JR
-          - SR
-          - I
-          - II
-          - III
-          - IV
-          - V
-    errors:
-      type: array
-      items:
-        properties:
-          description:
-            type: string
-            description: Error description.
-    TaxItemsLease:
+      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
       type: object
-      description: Tax items applied to estimated lease payment calculation.
-      properties:
-        capitalized:
-          type:
-          - array
-          - 'null'
-          description: Capitalized tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        dueAtSigning:
-          type:
-          - array
-          - 'null'
-          description: Tax items due at signing.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        biweekly:
-          type:
-          - array
-          - 'null'
-          description: Bi-weekly tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        monthly:
-          type:
-          - array
-          - 'null'
-          description: Monthly tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-    LoanApplicationDealerInput:
-      type: object
-      properties:
-        code:
-          type: string
-          description: Identification assigned to dealer by AutoFi. Created via the `POST /dealer` endpoint (if submitting applications for multiple dealers) or will be provided by AutoFi.
-        middleman:
-          allOf:
-          - $ref: '#/components/schemas/DecisionMiddlemen'
-          description: Portal used to submit the credit applications to the lenders.
-        middlemanId:
-          type: string
-          description: The dealer id used in the middleman portal on whose behalf the application will be submitted to the lender.
-        state:
-          type: string
-          description: The dealer's state which the book values for collateral valuation are based on.
       required:
-      - code
-    code:
-      type: integer
-      description: HTTP status code.
-    RebateType:
-      example: CASH
-      description: Default is `CASH`.
+      - first
+      - last
+      properties:
+        first:
+          description: First name
+          example: Mrs. Jamie-Lynn
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+        last:
+          description: Last name
+          example: O'Rourke-Van Winkle
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+    RebateInput:
+      allOf:
+      - $ref: '#/components/schemas/RebateBaseInput'
+      properties:
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+        programId:
+          $ref: '#/components/schemas/ProgramId'
+        type:
+          $ref: '#/components/schemas/RebateTypeInput'
+      required:
+      - amount
+      - name
+    MaritalStatus:
+      type: string
+      description: 'Marital status. Note: This field is optional, but it is recommended if the applicant or the dealer is in Wisconsin.'
+      enum:
+      - MARRIED
+      - SEPARATED
+      - UNMARRIED
+      example: MARRIED
+    IsSubvented:
+      type: boolean
+      description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
+    FeePlacement:
       type: string
       enum:
-      - CASH
-      - FINANCE_RATE
-      - LEASE_RATE
-    DecisioningApplicantInput:
+      - GROSS_CAP
+      - DUE_AT_SIGNING
+      description: '`GROSS_CAP` means that the fee will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the fee will be added to the Due at Signing Calculation and thus deducted from the down payment.'
+    LoanApplicationTradeInInput:
       type: object
       properties:
-        name:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantFullNameInput'
-        address:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantAddressInput'
-          - description: Applicant residence information.
-        previousAddress:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantAddressInput'
-          - description: 'Applicant previous residence information. Recommended when the applicant has lived at the current
-
-              address for less than 2 years.
-
-              '
-          - example:
-              street: 8754 Pine St
-              street2: ''
-              city: Detroit
-              state: MI
-              zip: '48204'
-              residenceType: RELATIVES
-              residenceTimeInMonths: 12
-              residenceMonthlyPayment: 0
-        phone:
-          allOf:
-          - $ref: '#/components/schemas/PhoneInput'
-        email:
-          allOf:
-          - $ref: '#/components/schemas/EmailInput'
-        ssn:
+        amount:
+          type: number
+          format: float
+          example: 5000.75
+          description: The difference between the value of the vehicle and payoff amount i.e. `bookValue` - `payoff`.
+        bookValue:
+          type: number
+          format: float
+          deprecated: true
+          description: _Deprecated - The estimated market value of the vehicle. If submitted, this field is ignored._
+        class:
           type: string
-          example: '666554444'
-          maxLength: 9
-          minLength: 9
-          pattern: ^\d{9}$
-          description: 'Social Security Number / ITIN in US. Note: The application is only submitted to lenders that support ITIN.
-
-            '
-        maritalStatus:
+        condition:
           allOf:
-          - $ref: '#/components/schemas/MaritalStatus'
-        educationLevel:
-          allOf:
-          - $ref: '#/components/schemas/EducationLevel'
-        employment:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantEmploymentInput'
-        previousEmployment:
-          allOf:
-          - $ref: '#/components/schemas/ApplicantEmploymentInput'
+          - $ref: '#/components/schemas/TradeInCondition'
+        leaseAnnualMiles:
+          type: integer
+          example: 15000
+          description: _Required if terminatingLease is true._ Miles a leased vehicle can be driven annually before the penalty is triggered.
+          exclusiveMinimum: 0
+        leaseMonthlyPayment:
+          type: number
+          format: float
+          example: 350.45
+          description: _Required if `terminatingLease` is true._ Monthly payment for leased vehicle.
+        leaseNumRemainingPayments:
+          type: integer
+          example: 6
+          minimum: 0
+          description: _Required if `terminatingLease` is true._ How many months are left until the lease terms are fulfilled.
+        leasePenaltyPerExcessMile:
+          type: number
+          format: float
+          example: 1.5
+          description: _Required if `terminatingLease` is true._ Penalty for driving more than leaseAnnualMiles per year. Calculated on a per mile basis.
+        leaseTerm:
+          type: integer
+          example: 24
+          description: _Required if `terminatingLease` is true._ Length of lease term in months.
+          exclusiveMinimum: 0
+        make:
+          type: string
+          minLength: 1
+          example: FORD
+          description: Trade-in vehicle make.
+        mileage:
+          type: integer
+          example: 40000
+          minimum: 0
+          description: Number of miles (US) or km (Canada) on vehicle.
+        model:
+          type: string
+          minLength: 1
+          example: Mustang
+          description: Trade-in vehicle model.
+        ownership:
+          type: string
+        payoff:
+          type: number
+          example: 3500.75
+          format: float
+          maximum: 999999
+          minimum: 0
+          description: The payoff amount the customer needs to pay to satisfy the terms of their vehicle loan.
+        series:
+          type: string
+        style:
+          type: string
+        terminatingLease:
+          type: boolean
+          description: Determines whether the trade-in is a leased vehicle.
+        vin:
+          type: string
+          example: 1FATP8FFXJ5139341
+          maxLength: 17
+          minLength: 17
+          pattern: ^[a-zA-Z0-9]{17}$
+          description: Trade-in vehicle Identification Number. Must be 17 alphanumeric characters.
+        year:
+          type: integer
+          example: 2018
+          minimum: 1990
+          description: Trade-in vehicle year.
+        financeCompany:
+          description: The finance company (lienholder) on the trade-in.
+          type: object
           properties:
-            timeInMonths:
-              description: Number of months working for this employer.
-        dob:
-          type: string
-          format: date
-          pattern: ^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$
-          example: '1990-01-30'
-          description: Date of Birth `YYYY-MM-DD`. Must be older than 18 and younger than 120.
-        incomeReported:
-          type: number
-          format: float
-          deprecated: true
-          description: Total gross monthly income from employment and other sources. _Deprecated - Use `employmentIncome` and `otherIncome` fields instead._
-        employmentIncome:
-          type: number
-          format: float
-          example: 10000
-          description: Gross monthly income from employment. _Required if `employmentStatus` is "EMPLOYED", "SELF_EMPLOYED" or "MILITARY"._
-        otherIncome:
-          type: array
-          description: Monthly income from sources other than employment.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/OtherIncomeItemInput'
-        creditScore:
-          type: number
-          example: 710
-          format: int64
-          maximum: 999
-          minimum: 300
-          deprecated: true
-          description: 'Credit score. When provided must be a number between 300 and 999 or `null` to indicate that no credit score
-
-            is available.
-
-
-            This field has been **deprecated** and will be removed in a future version. Please update your queries accordingly.
-
-            '
+            name:
+              type: string
+              example: FMCC
+              description: Name of the finance company.
       required:
-      - name
-      - address
-      - phone
-      - email
-      - ssn
-      - employment
-      - dob
+      - amount
+      - make
+      - model
+      - payoff
+      - year
     TaxableAmount:
       type: number
       example: 34317.99
       format: float
       minimum: 0
       description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" /> Taxable amount.</p>'
+    PricingStackRebateOutput:
+      type: object
+      title: Rebate
+      properties:
+        amount:
+          type: number
+          format: float
+          example: 2499.99
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate.
+          example: Veterans only Rebate
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Rebate expiry date.
+          example: 12-01-2024
+        isDiscount:
+          type: boolean
+          default: false
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation.
+          example: true
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+          example: false
+        isQualifiedOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+          example: true
+        name:
+          type: string
+          description: Description of the rebate to be shown to the customer.
+          example: VA Rebate
+        programId:
+          type: string
+          description: Unique identifier for the rebate program.
+          example: VA_1234
+        type:
+          $ref: '#/components/schemas/RebateType'
+    AppliedLeasePricingStackFigures:
+      properties:
+        appliedToCap:
+          description: Breakdown of capitalized costs.
+          properties:
+            downPayment:
+              description: Cash applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+          type: object
+        appliedToSigning:
+          description: Breakdown of costs applied at signing.
+          properties:
+            downPayment:
+              description: Cash applied to signing costs.
+              example: 2000
+              format: float
+              type:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to signing costs.
+              example: 2499.99
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to signing costs.
+              example: 3600
+              format: int64
+              type:
+              - number
+              - 'null'
+          type: object
+    EmailInput:
+      type: string
+      example: fake@example.com
+      format: email
+      minLength: 1
+      title: Email
+      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
     EducationLevel:
       type: string
       description: 'Education level. Note: This field is optional, but it is required to receive a decision for New Toyota and Lexus vehicles.'
@@ -1292,113 +1146,300 @@ components:
       - NOT_HS_GRAD
       - UNKNOWN
       example: HS_GRAD
-    SimulateInput:
+    ProductCategory:
+      type: string
+      title: Product Category
+      description: Product category.
+      example: VSC
+      enum:
+      - GAP_WAIVER
+      - OTHER
+      - VSC
+    ProductBaseInput:
       type: object
-      title: Simulate
-      description: 'Request a test response from one or more lenders.
-
-        When omitted, the loan application is handled according to the default rules defined for the environment.
-
-        In uat, the AutoFi Test Environment is used and approvals are returned for all lenders.
-
-        In production, the loan application is submitted to R1/DT for `live` decisioning.
-
-        '
+      title: Product
+      description: Product information.
       properties:
-        environment:
-          $ref: '#/components/schemas/SimulateEnvironment'
-        decisions:
-          title: Simulated Decision
-          description: The decisions to be simulated.
-          items:
-            $ref: '#/components/schemas/SimulatedDecision'
-    DecisionMiddlemen:
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        name:
+          type: string
+          description: Product description.
+          example: Extended Warranty
+        price:
+          $ref: '#/components/schemas/price'
+        termMiles:
+          type: integer
+          description: Product mileage limit.
+          example: 100000
+        termMonths:
+          type: integer
+          description: Product duration.
+          example: 60
+    ProgramId:
+      type: string
+      description: Unique identifier for the rebate program. When submitting a rebate with isQualifiedOffer as `true` the programId is required.
+      example: VA_1234
+    DownPayment:
+      type: integer
+      title: Down Payment
+      description: Amount the consumer is putting down towards the vehicle.
+      example: 3000
+      minimum: 0
+    InputVehicleAge:
+      description: Vehicle age.
       type: string
       enum:
-      - routeOne
-      - dealertrack
-    ProductInput:
-      allOf:
-      - $ref: '#/components/schemas/ProductBaseInput'
+      - NEW
+      - CPO
+      - USED
+    FinanceFees:
+      type: array
+      items:
+        allOf:
+        - $ref: '#/components/schemas/FeeInput'
+        properties:
+          code:
+            $ref: '#/components/schemas/schemas-FeeCodeInput'
+          isTaxable:
+            description: 'Default: `false` <br> Applies only when requested offerType is `FINANCE`.'
+            deprecated: true
+      example:
+        amount: 249.99
+        code: SHIPPING_FEE
+        name: Shipping fee
+    RebateTypeInput:
+      example: CASH
+      description: Default is `CASH`.
+      type: string
+      enum:
+      - CASH
+      - LEASE_RATE
+      - FINANCE_RATE
+    FeePlacementInput:
+      type: string
+      enum:
+      - GROSS_CAP
+      - DUE_AT_SIGNING
+    BaseSelectedProduct:
+      type: object
+      description: Fields in common for FINANCE, CASH and LEASE.
       properties:
-        isTaxable:
-          type: boolean
-          example: true
-          default: false
-          description: Flag indicating whether this product is taxable or not. When `tax` is set to a `non-zero` amount then `isTaxable` is automatically set to true. In the case that zero or no `tax` is provided and `isTaxable` is `true`, the `tax` is calculated and included in the deal.
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The mileage selected by the customer for a specific product (e.g. VSC).
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the F&I product selected.
+        price:
+          $ref: '#/components/schemas/price'
+        referenceId:
+          $ref: '#/components/schemas/referenceId'
         tax:
           $ref: '#/components/schemas/tax'
-      required:
-      - category
-      - name
-      - price
-    CdkDmsExternalResource:
-      description: 'External resources associated with the loan application within the CDK Dealer Management System. This field is only present in the response when an offer has been accepted on the loan application and linked in the CDK DMS.
-
-        '
-      type:
-      - object
-      - 'null'
+        taxableAmount:
+          $ref: '#/components/schemas/TaxableAmount'
+        taxLineItems:
+          $ref: '#/components/schemas/TaxLineItems'
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
+        total:
+          type:
+          - number
+          - 'null'
+          example: 1
+          format: float
+          minimum: 0
+          description: The total price of the product including the finance charge.
+      example:
+        mileage: 50000
+        name: Extended Warranty
+        price: 700
+        referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+        tax: 60.01
+        taxableAmount: 700
+        taxLineItems:
+        - jurisdiction:
+            name: COLORADO
+            type: STATE
+            imposition: General Sales and Use Tax
+          tax:
+            rate: 0.086
+            amount: 60.1
+        termMonths: 60
+        total: 760.01
+    schemas-FeeCodeInput:
+      example: SHIPPING_FEE
+      description: 'Default is `OTHER`. <br> Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman. <br> All fee types will be taxable based upon the appropriate jurisdiction with the exception of `OTHER`.'
+      type: string
+      enum:
+      - DOC_FEE
+      - OTHER
+      - SHIPPING_FEE
+      - TIRE_FEE
+      - TITLE_REG
+    Term:
+      type: integer
+      title: Term
+      description: Length of term in months.
+      example: 24
+      exclusiveMinimum: 0
+    FinancePricingStack:
+      title: Finance
+      type: object
+      description: This fields are only applicable to `FINANCE`.
+      allOf:
+      - $ref: '#/components/schemas/BasePricingStack'
       properties:
-        customer:
+        downPayment:
           type:
-          - object
+          - integer
           - 'null'
-          properties:
-            id:
-              description: Unique identifier for the `customer` record within the CDK system.
-              example: '18185'
-              type: string
-        deal:
+          description: Amount the consumer is putting down towards the vehicle.
+          example: 3500.01
+        financeCharge:
           type:
-          - object
+          - number
           - 'null'
-          properties:
-            id:
-              description: Unique identifier for the `deal` record within the CDK system.
-              type: string
-              example: '50512'
-        dealer:
+          format: float
+          description: Finance charge calculated based on the `amountFinanced`, `apr` and `termMonths`.
+          example: 345.01
+        taxItems:
+          type: array
+          description: Tax items have now been `deprecated` in favor of the standardized `appliedTaxes` field.
+          items:
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/TaxItem'
+          deprecated: true
+          example:
+            name: Municipal Tax
+            price: 87.99
+            totalTax: 87.99
+        amountFinanced:
+          description: Total amount financed for the vehicle.
+          example: 2269.57
+        monthlyPayment:
+          description: Total monthly payment.
+        offerType:
+          description: Type of offer.
+        termMonths:
+          description: Duration of the `FINANCE` contract in months.
+          example: 48
+        totalTaxes:
+          description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
           type:
-          - object
+          - number
           - 'null'
-          properties:
-            id:
-              description: Unique identifier for the `dealer` resource within the CDK system.
-              type: string
-              example: 3PADEVWB
-    LoanApplicationResponse:
+          format: float
+          example: 6513.67
+        totalFees:
+          description: Total amount of all fees.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 250
+    PartialBasePricingStack:
+      type: object
+      description: Fields in common for FINANCE and LEASE.
+      properties:
+        amountFinanced:
+          type:
+          - number
+          - 'null'
+          format: float
+        apr:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Annual percentage rate.
+          example: 0.02
+        buyRate:
+          description: Dealer financing rate.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 0.0275
+        monthlyPayment:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 335.34
+        numberOfPayments:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: Number of payments to make.
+          example: 35
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          description: Duration of the contract in months.
+        totalRebates:
+          type:
+          - integer
+          - 'null'
+          description: Total rebate amount.
+          example: 2499.99
+        totalOfPayments:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total paid for all payments.
+          example: 13736.9
+        totalProducts:
+          description: Total amount of all products including taxes.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 115.5
+    TaxItem:
       type: object
       properties:
-        agentUrl:
+        name:
           type:
           - string
           - 'null'
-          example: https://example.com
-          format: uri
-          minLength: 1
-          description: 'URL to the agent experience. This URL is not intended for the customer, but for the customer service agent. Please contact your AutoFi rep for configuration and further details of this field.  Note: This field is only active when a referenceId is associated with the loan application. See <a href=''#tag/Loan-Applications''>Create Loan Application</a>.'
-        customerProfile:
-          type: string
-          example: https://example.com
-          format: uri
-          minLength: 1
-          description: URL to the customer's profile in AutoFi Dealer Portal. Used by sales or customer support team.
-        loanApplicationExpires:
-          type: string
-          format: date-time
-          description: The date `url` is good until.
-        loanApplicationId:
-          type: string
-          description: The unique identifier for the loan application created by the request.
-        referenceId:
+        price:
           type:
-          - string
+          - number
           - 'null'
-          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
-        url:
-          allOf:
-          - $ref: '#/components/schemas/ConsumerUrlSchema'
+          format: float
+        totalTax:
+          type:
+          - number
+          - 'null'
+          format: float
+    code:
+      type: integer
+      description: HTTP status code.
+    CreditOfferType:
+      type: string
+      title: Offer Type
+      description: How the customer is financing the vehicle - `FINANCE` or `LEASE`.
+      example: FINANCE
+      enum:
+      - FINANCE
+      - LEASE
     FeeCode:
       example: SHIPPING_FEE
       description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
@@ -1409,6 +1450,51 @@ components:
       - SHIPPING_FEE
       - TIRE_FEE
       - TITLE_REG
+    IncentiveOption:
+      type: string
+      title: Incentive Option
+      description: The type of incentive the consumer is looking for.
+      default: LOWEST_MONTHLY
+      enum:
+      - LARGEST_REBATE
+      - LOWEST_APR
+      - LOWEST_MONTHLY
+    schemas-referenceId:
+      type: string
+      example: my-reference-id
+      description: Partner's unique identifier for each credit application. When provided, the loan application previously created for the given `referenceId` is returned instead of creating a new one.
+    tax:
+      type: number
+      example: 15.5
+      format: float
+      minimum: 0
+      description: "Tax amount for the product. Defaults to 0.  \n**Notes:** Does not include vehicle taxes.  \n  For vehicle specific taxes see `appliedTaxes.amount`.  \n  For Total taxes see `pricingStack.totalTaxes`.\n"
+    DecisionMiddlemen:
+      type: string
+      enum:
+      - routeOne
+      - dealertrack
+    message:
+      type: string
+      description: HTTP status description.
+    LeaseTaxes:
+      type: array
+      title: Lease
+      items:
+        properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
+          name:
+            $ref: '#/components/schemas/FeeName'
+          taxPlacement:
+            $ref: '#/components/schemas/TaxPlacement'
+    ConsumerUrlSchema:
+      type: string
+      title: Consumer URL
+      example: https://example.com
+      format: uri
+      minLength: 1
+      description: URL to the consumer experience. The url expires 30 days after creation.
     LeasePricingStack:
       type: object
       title: Lease
@@ -1547,40 +1633,10 @@ components:
           deprecated: true
           description: '`totalTaxes` has been `deprecated` for LEASE applications'
           example: 367.61
-    DownPayment:
-      type: integer
-      title: Down Payment
-      description: Amount the consumer is putting down towards the vehicle.
-      example: 3000
-      minimum: 0
-    AddressResidenceType:
+    FeeName:
       type: string
-      description: "The type of residence at this address.\n\nBoth `BUYING` and `RENT` indicate the applicant has a monthly mortgage or rent payment. When either of these two\n`residenceType` values are provided, the `residenceMonthlyPayment` field is required and must be a positive integer.\n\nFor all other `residenceType` values, if the `residenceMonthlyPayment` field is provided, it is ignored and\n**NOT** submitted to lenders. All other `address` fields are the same regardless of `residenceType`.\n\n`BUYING`: The applicant has monthly mortgage payments.\n\n`MOBILE`: The applicant does not have a monthly payment.\n    \n`OTHER`: The applicant does not have a monthly payment.\n\n`OWN`: The applicant does not have a monthly payment because they own their home outright.\n\n`RELATIVES`: The applicant does not have a monthly payment.\n\n`RENT`: The applicant has monthly rent payments."
-      example: RENT
-      enum:
-      - BUYING
-      - MOBILE
-      - OTHER
-      - OWN
-      - RELATIVES
-      - RENT
-    TaxItem:
-      type: object
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-        price:
-          type:
-          - number
-          - 'null'
-          format: float
-        totalTax:
-          type:
-          - number
-          - 'null'
-          format: float
+      description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
+      example: Shipping fee.
     TradeIn:
       type: object
       properties:
@@ -1678,93 +1734,179 @@ components:
           example: 2018
           minimum: 1990
           description: Trade-in vehicle year.
-    BaseSelectedProduct:
+    LoanApplicationResponse:
       type: object
-      description: Fields in common for FINANCE, CASH and LEASE.
       properties:
-        mileage:
-          type:
-          - integer
-          - 'null'
-          example: 1
-          minimum: 0
-          description: The mileage selected by the customer for a specific product (e.g. VSC).
-        name:
+        agentUrl:
           type:
           - string
           - 'null'
-          description: Name of the F&I product selected.
-        price:
-          $ref: '#/components/schemas/price'
+          example: https://example.com
+          format: uri
+          minLength: 1
+          description: 'URL to the agent experience. This URL is not intended for the customer, but for the customer service agent. Please contact your AutoFi rep for configuration and further details of this field.  Note: This field is only active when a referenceId is associated with the loan application. See <a href=''#tag/Loan-Applications''>Create Loan Application</a>.'
+        customerProfile:
+          type: string
+          example: https://example.com
+          format: uri
+          minLength: 1
+          description: URL to the customer's profile in AutoFi Dealer Portal. Used by sales or customer support team.
+        loanApplicationExpires:
+          type: string
+          format: date-time
+          description: The date `url` is good until.
+        loanApplicationId:
+          type: string
+          description: The unique identifier for the loan application created by the request.
         referenceId:
-          $ref: '#/components/schemas/referenceId'
-        tax:
-          $ref: '#/components/schemas/tax'
-        taxableAmount:
-          $ref: '#/components/schemas/TaxableAmount'
-        taxLineItems:
-          $ref: '#/components/schemas/TaxLineItems'
-        termMonths:
           type:
-          - integer
+          - string
           - 'null'
-          example: 1
-          minimum: 0
-          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
-        total:
-          type:
-          - number
-          - 'null'
-          example: 1
-          format: float
-          minimum: 0
-          description: The total price of the product including the finance charge.
-      example:
-        mileage: 50000
-        name: Extended Warranty
-        price: 700
-        referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
-        tax: 60.01
-        taxableAmount: 700
-        taxLineItems:
-        - jurisdiction:
-            name: COLORADO
-            type: STATE
-            imposition: General Sales and Use Tax
-          tax:
-            rate: 0.086
-            amount: 60.1
-        termMonths: 60
-        total: 760.01
-    FeePlacementInput:
+          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
+        url:
+          allOf:
+          - $ref: '#/components/schemas/ConsumerUrlSchema'
+    price:
+      type: number
+      example: 100
+      format: float
+      minimum: 0
+      description: Pretax price.
+    Relationship:
+      example: SPOUSE
+      description: The cosigner's relationship with the primary applicant. Use `PARENT` when the cosigner is the applicant's parent. Use `RESIDESWITH` when there is no familial relationship but the applicant and cosigner live together.
       type: string
       enum:
-      - GROSS_CAP
-      - DUE_AT_SIGNING
-    ProductBaseInput:
+      - RESIDESWITH
+      - PARENT
+      - OTHER
+      - SPOUSE
+    DecisioningApplicantInput:
       type: object
-      title: Product
-      description: Product information.
       properties:
-        category:
-          $ref: '#/components/schemas/ProductCategory'
         name:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantFullNameInput'
+        address:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantAddressInput'
+          - description: Applicant residence information.
+        previousAddress:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantAddressInput'
+          - description: 'Applicant previous residence information. Recommended when the applicant has lived at the current
+
+              address for less than 2 years.
+
+              '
+          - example:
+              street: 8754 Pine St
+              street2: ''
+              city: Detroit
+              state: MI
+              zip: '48204'
+              residenceType: RELATIVES
+              residenceTimeInMonths: 12
+              residenceMonthlyPayment: 0
+        phone:
+          allOf:
+          - $ref: '#/components/schemas/PhoneInput'
+        email:
+          allOf:
+          - $ref: '#/components/schemas/EmailInput'
+        ssn:
           type: string
-          description: Product description.
-          example: Extended Warranty
-        price:
-          $ref: '#/components/schemas/price'
-        termMiles:
+          example: '666554444'
+          maxLength: 9
+          minLength: 9
+          pattern: ^\d{9}$
+          description: 'Social Security Number / ITIN in US. Note: The application is only submitted to lenders that support ITIN.
+
+            '
+        maritalStatus:
+          allOf:
+          - $ref: '#/components/schemas/MaritalStatus'
+        educationLevel:
+          allOf:
+          - $ref: '#/components/schemas/EducationLevel'
+        employment:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantEmploymentInput'
+        previousEmployment:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantEmploymentInput'
+          properties:
+            timeInMonths:
+              description: Number of months working for this employer.
+        dob:
+          type: string
+          format: date
+          pattern: ^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$
+          example: '1990-01-30'
+          description: Date of Birth `YYYY-MM-DD`. Must be older than 18 and younger than 120.
+        incomeReported:
+          type: number
+          format: float
+          deprecated: true
+          description: Total gross monthly income from employment and other sources. _Deprecated - Use `employmentIncome` and `otherIncome` fields instead._
+        employmentIncome:
+          type: number
+          format: float
+          example: 10000
+          description: Gross monthly income from employment. _Required if `employmentStatus` is "EMPLOYED", "SELF_EMPLOYED" or "MILITARY"._
+        otherIncome:
+          type: array
+          description: Monthly income from sources other than employment.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/OtherIncomeItemInput'
+        creditScore:
+          type: number
+          example: 710
+          format: int64
+          maximum: 999
+          minimum: 300
+          deprecated: true
+          description: 'Credit score. When provided must be a number between 300 and 999 or `null` to indicate that no credit score
+
+            is available.
+
+
+            This field has been **deprecated** and will be removed in a future version. Please update your queries accordingly.
+
+            '
+      required:
+      - name
+      - address
+      - phone
+      - email
+      - ssn
+      - employment
+      - dob
+    DecisioningOfferPreferences:
+      type: object
+      properties:
+        annualMileage:
           type: integer
-          description: Product mileage limit.
-          example: 100000
-        termMonths:
-          type: integer
-          description: Product duration.
-          example: 60
-    message:
-      type: string
-      description: HTTP status description.
+          example: 10000
+          description: Miles the consumer would prefer when leasing a vehicle
+          exclusiveMinimum: 0
+        apr:
+          $ref: '#/components/schemas/Apr'
+        downPayment:
+          $ref: '#/components/schemas/DownPayment'
+        incentiveOption:
+          $ref: '#/components/schemas/IncentiveOption'
+        isSubvented:
+          $ref: '#/components/schemas/IsSubvented'
+        requestedOfferType:
+          $ref: '#/components/schemas/CreditOfferType'
+        term:
+          $ref: '#/components/schemas/Term'
+      required:
+      - downPayment
+      - requestedOfferType
+      - term
     ApplicantAddressInput:
       type: object
       required:
@@ -1812,73 +1954,6 @@ components:
           example: 16
           minimum: 0
           description: "The number of months living at this address. If less than 24 please include `previousAddress`. \n\n__Note:__ An input of 0 will be rounded up to 1 month.\n"
-    EmploymentStatus:
-      type: string
-      enum:
-      - CONTRACT
-      - EMPLOYED
-      - FULL_TIME
-      - MILITARY
-      - NA
-      - OTHER
-      - PART_TIME
-      - RETIRED
-      - SELF_EMPLOYED
-      - SEASONAL
-      - STUDENT
-      - TEMPORARY
-      - UNEMPLOYED
-    schemas-referenceId:
-      type: string
-      example: my-reference-id
-      description: Partner's unique identifier for each credit application. When provided, the loan application previously created for the given `referenceId` is returned instead of creating a new one.
-    TaxAmount:
-      type: number
-      example: 995.22
-      format: float
-      minimum: 0
-      description: "Total amount for this tax.  \n**Note**: For product specific taxes see `selectedProducts.tax`.  \nFor Total taxes see `pricingStack.totalTaxes`.\n"
-    ExternalResources:
-      type: object
-      properties:
-        dms:
-          $ref: '#/components/schemas/DmsExternalResources'
-    IncentiveOption:
-      type: string
-      title: Incentive Option
-      description: The type of incentive the consumer is looking for.
-      default: LOWEST_MONTHLY
-      enum:
-      - LARGEST_REBATE
-      - LOWEST_APR
-      - LOWEST_MONTHLY
-    TaxItemLease:
-      type: object
-      description: Lease Tax Item.
-      properties:
-        amount:
-          description: Tax item amount.
-          type: number
-          format: float
-        description:
-          description: Tax item description.
-          type: string
-        descriptionI18n:
-          description: Tax item description for locale.
-          type: string
-    MaritalStatus:
-      type: string
-      description: 'Marital status. Note: This field is optional, but it is recommended if the applicant or the dealer is in Wisconsin.'
-      enum:
-      - MARRIED
-      - SEPARATED
-      - UNMARRIED
-      example: MARRIED
-    FeeAmount:
-      type: number
-      example: 249.99
-      format: float
-      minimum: 0
     DmsExternalResources:
       description: 'Grouping of external resources within Dealer Management Systems (DMS) associated with the loan application.
 
@@ -1887,440 +1962,365 @@ components:
       properties:
         cdk:
           $ref: '#/components/schemas/CdkDmsExternalResource'
-    RebateInput:
-      allOf:
-      - $ref: '#/components/schemas/RebateBaseInput'
-      properties:
-        isPrivateOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is a private offer for the applicant.
-        programId:
-          $ref: '#/components/schemas/ProgramId'
-        type:
-          $ref: '#/components/schemas/RebateTypeInput'
-      required:
-      - amount
-      - name
-    LoanApplicationData:
+    TaxAmount:
+      type: number
+      example: 995.22
+      format: float
+      minimum: 0
+      description: "Total amount for this tax.  \n**Note**: For product specific taxes see `selectedProducts.tax`.  \nFor Total taxes see `pricingStack.totalTaxes`.\n"
+    TaxItemsLease:
       type: object
+      description: Tax items applied to estimated lease payment calculation.
       properties:
-        afExperienceCompleted:
-          type:
-          - boolean
-          - 'null'
-          description: This flag is `true` when a customer has completed the last step in the AutoFi experience.
-        appliedFees:
-          description: Fees applied to the loan application
-          anyOf:
-          - $ref: '#/components/schemas/schemas-FinanceFees'
-          - $ref: '#/components/schemas/LeaseFees'
-        appliedTaxes:
-          description: Taxes applied to the loan application
-          anyOf:
-          - $ref: '#/components/schemas/FinanceTaxes'
-          - $ref: '#/components/schemas/LeaseTaxes'
-        creditScore:
-          type: integer
-          minimum: 300
-          maximum: 999
-          description: Credit score. Number between 300 and 999.
-        decisions:
+        capitalized:
           type:
           - array
           - 'null'
+          description: Capitalized tax items.
           items:
             allOf:
-            - $ref: '#/components/schemas/Decision'
-        loanApplicationId:
-          type: string
-        offerAvailable:
+            - $ref: '#/components/schemas/TaxItemLease'
+        dueAtSigning:
           type:
-          - boolean
+          - array
           - 'null'
-          description: This flag is `true` if an offer is available to be displayed to a consumer.
-        offerPreferences:
-          type: object
-          properties:
-            annualMileage:
-              type:
-              - integer
-              - 'null'
-              example: 1
-              minimum: 1
-              description: Miles the consumer would prefer when leasing a vehicle
-            apr:
-              type: number
-              format: float
-              description: Annual percentage rate in decimals
-            downPayment:
-              type: integer
-              example: 1
-              minimum: 0
-              description: Amount the consumer is putting down towards the vehicle
-            incentiveOption:
-              allOf:
-              - $ref: '#/components/schemas/IncentiveOption'
-              description: 'Default: `LOWEST_MONTHLY`'
-            isSubvented:
-              type: boolean
-              description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
-            requestedOfferType:
-              allOf:
-              - $ref: '#/components/schemas/CreditOfferType'
-              description: How the customer is financing the vehicle - "FINANCE" or "LEASE".
-            term:
-              type: integer
-              example: 1
-              minimum: 1
-              description: Length of term in months
-        pricingStack:
-          description: Pricing information for a loan application. Only available after the state is `ACCEPTED`.
-          oneOf:
-          - $ref: '#/components/schemas/FinancePricingStack'
-          - $ref: '#/components/schemas/LeasePricingStack'
-        referenceId:
-          type:
-          - string
-          - 'null'
-          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
-        selectedProducts:
-          type: array
-          description: Selected products.
+          description: Tax items due at signing.
           items:
             allOf:
-            - $ref: '#/components/schemas/BaseSelectedProduct'
-            type: object
-            properties:
-              monthlyPayment:
-                type:
-                - number
-                - 'null'
-                example: 1
-                format: float
-                minimum: 0
-                description: Monthly payment over the finance term including the finance charge.
-        state:
-          description: '<p>The current state of the loan application within the decisioning flow. The various states are detailed in the state diagram below.</p>
-
-            <img src="/diagrams/loanApplicationStates-API.mmd.svg" alt="Loan Application State Diagram" style="width: 100%; max-width: 600px" />
-
-            '
+            - $ref: '#/components/schemas/TaxItemLease'
+        biweekly:
           type:
-          - string
+          - array
           - 'null'
-          enum:
-          - ACCEPTED
-          - APPROVED
-          - BEGAN_APPLICATION
-          - DECLINED
-          - ERROR
-          - FI_COMPLETED
-          - PENDING
-          - SUBMITTED
-        tradeIn:
-          description: Trade in information.
-          type: object
+          description: Bi-weekly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        monthly:
+          type:
+          - array
+          - 'null'
+          description: Monthly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+    PhoneInput:
+      type: string
+      example: '5554443333'
+      maxLength: 10
+      minLength: 10
+      pattern: ^[2-9][0-9]{9}$
+      description: A valid 10 digit phone number.
+    DecisioningVehicleInput:
+      type: object
+      properties:
+        age:
           allOf:
-          - $ref: '#/components/schemas/TradeIn'
-    Apr:
-      type: number
-      format: float
-      example: 0.02
-      description: Annual percentage rate in decimals e.g. if the apr is 2% this should be 0.02
-    FinancePricingStack:
-      title: Finance
-      type: object
-      description: This fields are only applicable to `FINANCE`.
-      allOf:
-      - $ref: '#/components/schemas/BasePricingStack'
-      properties:
-        downPayment:
-          type:
-          - integer
-          - 'null'
-          description: Amount the consumer is putting down towards the vehicle.
-          example: 3500.01
-        financeCharge:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Finance charge calculated based on the `amountFinanced`, `apr` and `termMonths`.
-          example: 345.01
-        taxItems:
-          type: array
-          description: Tax items have now been `deprecated` in favor of the standardized `appliedTaxes` field.
-          items:
-            type: object
-            allOf:
-            - $ref: '#/components/schemas/TaxItem'
-          deprecated: true
-          example:
-            name: Municipal Tax
-            price: 87.99
-            totalTax: 87.99
-        amountFinanced:
-          description: Total amount financed for the vehicle.
-          example: 2269.57
-        monthlyPayment:
-          description: Total monthly payment.
-        offerType:
-          description: Type of offer.
-        termMonths:
-          description: Duration of the `FINANCE` contract in months.
-          example: 48
-        totalTaxes:
-          description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 6513.67
-        totalFees:
-          description: Total amount of all fees.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 250
-    DecisioningOfferPreferences:
-      type: object
-      properties:
-        annualMileage:
+          - $ref: '#/components/schemas/InputVehicleAge'
+        bodyType:
+          type: string
+          example: Fastback
+          description: Vehicle body type.
+        color:
+          type: string
+          example: blue
+          description: Vehicle color.
+        dealerRetailPrice:
           type: integer
-          example: 10000
-          description: Miles the consumer would prefer when leasing a vehicle
+          example: 30995
+          description: The vehicle's price.
           exclusiveMinimum: 0
-        apr:
-          $ref: '#/components/schemas/Apr'
-        downPayment:
-          $ref: '#/components/schemas/DownPayment'
-        incentiveOption:
-          $ref: '#/components/schemas/IncentiveOption'
-        isSubvented:
-          $ref: '#/components/schemas/IsSubvented'
-        requestedOfferType:
-          $ref: '#/components/schemas/CreditOfferType'
-        term:
-          $ref: '#/components/schemas/Term'
-      required:
-      - downPayment
-      - requestedOfferType
-      - term
-    SimulatedDecision:
-      title: Simulated Decision
-      properties:
-        decision:
-          $ref: '#/components/schemas/SimulatedDecisionState'
-        delay:
-          type: integer
-          example: 75000
-          description: Specify how long it should take for this simulated decision to return in milliseconds.
-        lender:
-          type: string
-          example: CHASE
-          description: "The lender that decision should be simulated for.\nThese are the lender codes available to use:\n  - ALLY \n  - BOFA \n  - CHASE \n  - EXETER \n  - FIFS  \n  - FMCC \n  - GLS \n  - GMFL \n  - HBAN \n  - LAFSNC \n  - RBC \n  - SANT \n  - SCF \n  - SETF \n  - TRICOR \n  - VROOM \n  - WEST\n"
-        middleman:
-          allOf:
-          - $ref: '#/components/schemas/DecisionMiddlemen'
-          description: The middleman that the decision should be simulated from.
-      required:
-      - decision
-      - lender
-    OtherIncomeItemInput:
-      type: object
-      properties:
-        amount:
+        invoice:
           type: number
-          example: 1
+          example: 29850.75
           format: float
           minimum: 0
-        source:
+          description: The initial price for the vehicle from the manufacturer. _Must be a positive number when `age` is `NEW`._
+        maintenanceCosts:
+          type: object
+        make:
           type: string
-          description: 'e.g.
-
-
-            - Aid for Dependent Children
-
-            - Child Support
-
-            - Cost of Living Allowance (COLA)
-
-            - Disability
-
-            - Family Subsistence Supplemental Allowance (FSSA)
-
-            - Housing Allowances
-
-            - Military Basic Allowance for Subsistence (BAS)
-
-            - Municipal Bond Interest
-
-            - Other Non-Taxable Sources of Income
-
-            - Other
-
-            - Public Assistance
-
-            - Railroad Pension
-
-            - Second Employer
-
-            - Social Security Benefits
-
-            - Tips
-
-            - Workman''s Compensation
-
-            '
-          example: Social Security Benefits
-      required:
-      - amount
-      - source
-    PartialBasePricingStack:
-      type: object
-      description: Fields in common for FINANCE and LEASE.
-      properties:
-        amountFinanced:
-          type:
-          - number
-          - 'null'
-          format: float
-        apr:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Annual percentage rate.
-          example: 0.02
-        buyRate:
-          description: Dealer financing rate.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 0.0275
-        monthlyPayment:
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 335.34
-        numberOfPayments:
-          type:
-          - integer
-          - 'null'
+          example: FORD
+          description: Vehicle make.
+        mileage:
+          type: integer
+          example: 35684
           minimum: 0
-          description: Number of payments to make.
-          example: 35
-        termMonths:
-          type:
-          - integer
-          - 'null'
-          description: Duration of the contract in months.
-        totalRebates:
-          type:
-          - integer
-          - 'null'
-          description: Total rebate amount.
-          example: 2499.99
-        totalOfPayments:
-          type:
-          - number
-          - 'null'
+          description: Number of miles (US) or km (Canada) on vehicle. _Required if `age` is `USED` or `CPO`._
+        model:
+          type: string
+          example: Mustang
+          description: Vehicle model.
+        modelCode:
+          type: string
+          example: P8T
+          description: The code for the model provided by the manufacturer. This field is optional but recommended for new vehicles since it improves accuracy, e.g. determining the correct rebates.
+        msrp:
+          type: number
           format: float
-          description: Total paid for all payments.
-          example: 13736.9
-        totalProducts:
-          description: Total amount of all products including taxes.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 115.5
-    LeaseFees:
+          example: 34950.65
+          description: Manufacturer Suggested Retail Price. _Required if `age` is `NEW`._
+        stockNumber:
+          type: string
+          example: FCL1425
+          description: Vehicle stock number in dealer's inventory. Displayed in customer profile page in AutoFi Dealer Portal.
+        trim:
+          type: string
+          description: Vehicle trim.
+        vin:
+          type: string
+          example: 1FATP8FFXJ5139341
+          maxLength: 17
+          minLength: 17
+          pattern: ^[a-zA-Z0-9]{17}$
+          description: Vehicle Identification Number. Must be 17 alphanumeric characters.
+        year:
+          type: integer
+          example: 2020
+          minimum: 1900
+          description: Vehicle year.
+        photoUrl:
+          type: string
+          example: https://example.com/my/vehicle/photo.jpg
+          format: uri
+          minLength: 1
+          description: A valid URL to be used for showing the vehicle within the offer experience and customer profile page in AutoFi Dealer Portal.
+        fuelType:
+          description: Fuel type used by the vehicle engine.
+          type: string
+          default: GASOLINE
+          example: GASOLINE
+          enum:
+          - ELECTRIC
+          - GASOLINE
+          - HYBRID
+      required:
+      - age
+      - dealerRetailPrice
+      - make
+      - model
+      - vin
+      - year
+    TaxLineItems:
       type: array
-      title: Lease
+      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" />The breakdown of the tax amount by jurisdiction. Each tax line item contains the tax rate and corresponding amount for each jurisdiction or tax authority.</p>'
       items:
         properties:
-          amount:
-            $ref: '#/components/schemas/FeeAmount'
-          code:
-            $ref: '#/components/schemas/FeeCode'
-          feePlacement:
-            $ref: '#/components/schemas/FeePlacement'
-          name:
-            $ref: '#/components/schemas/FeeName'
-    RebateTypeInput:
-      example: CASH
-      description: Default is `CASH`.
-      type: string
-      enum:
-      - CASH
-      - LEASE_RATE
-      - FINANCE_RATE
-    EmailInput:
-      type: string
-      example: fake@example.com
-      format: email
-      minLength: 1
-      title: Email
-      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
-    PricingStackRebateOutput:
+          jurisdiction:
+            type: object
+            description: The jurisdiction responsible for the tax line item.
+            properties:
+              type:
+                type: string
+                example: STATE
+                description: Type of jurisdiction.
+                enum:
+                - STATE
+                - CITY
+                - COUNTY
+                - DISTRICT
+              name:
+                type: string
+                example: COLORADO
+                description: Name of the jurisdiction.
+              imposition:
+                type: string
+                example: General Sales and Use Tax
+                description: Name of the tax imposition.
+          tax:
+            type: object
+            description: Tax rate and amount calculated for the jurisdiction.
+            properties:
+              rate:
+                type: number
+                format: float
+                minimum: 0
+                maximum: 1
+                example: 0.029
+                description: Tax rate.
+              amount:
+                type: number
+                format: float
+                minimum: 0
+                example: 995.22
+                description: Tax amount.
+    SimulateInput:
       type: object
-      title: Rebate
+      title: Simulate
+      description: 'Request a test response from one or more lenders.
+
+        When omitted, the loan application is handled according to the default rules defined for the environment.
+
+        In uat, the AutoFi Test Environment is used and approvals are returned for all lenders.
+
+        In production, the loan application is submitted to R1/DT for `live` decisioning.
+
+        '
       properties:
-        amount:
+        environment:
+          $ref: '#/components/schemas/SimulateEnvironment'
+        decisions:
+          title: Simulated Decision
+          description: The decisions to be simulated.
+          items:
+            $ref: '#/components/schemas/SimulatedDecision'
+    schemas-tax:
+      type: number
+      example: 1745.25
+      format: float
+      minimum: 0
+      description: The total taxes to be applied (should not include F&I Product taxes).
+    referenceId:
+      type:
+      - string
+      - 'null'
+      title: Product Reference ID
+      example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+      description: Product identifier used to reference a product within a DMS.
+    ProductInput:
+      allOf:
+      - $ref: '#/components/schemas/ProductBaseInput'
+      properties:
+        isTaxable:
+          type: boolean
+          example: true
+          default: false
+          description: Flag indicating whether this product is taxable or not. When `tax` is set to a `non-zero` amount then `isTaxable` is automatically set to true. In the case that zero or no `tax` is provided and `isTaxable` is `true`, the `tax` is calculated and included in the deal.
+        tax:
+          $ref: '#/components/schemas/tax'
+      required:
+      - category
+      - name
+      - price
+    AddressResidenceType:
+      type: string
+      description: "The type of residence at this address.\n\nBoth `BUYING` and `RENT` indicate the applicant has a monthly mortgage or rent payment. When either of these two\n`residenceType` values are provided, the `residenceMonthlyPayment` field is required and must be a positive integer.\n\nFor all other `residenceType` values, if the `residenceMonthlyPayment` field is provided, it is ignored and\n**NOT** submitted to lenders. All other `address` fields are the same regardless of `residenceType`.\n\n`BUYING`: The applicant has monthly mortgage payments.\n\n`MOBILE`: The applicant does not have a monthly payment.\n    \n`OTHER`: The applicant does not have a monthly payment.\n\n`OWN`: The applicant does not have a monthly payment because they own their home outright.\n\n`RELATIVES`: The applicant does not have a monthly payment.\n\n`RENT`: The applicant has monthly rent payments."
+      example: RENT
+      enum:
+      - BUYING
+      - MOBILE
+      - OTHER
+      - OWN
+      - RELATIVES
+      - RENT
+    ExternalResources:
+      type: object
+      properties:
+        dms:
+          $ref: '#/components/schemas/DmsExternalResources'
+    FeeAmount:
+      type: number
+      example: 249.99
+      format: float
+      minimum: 0
+    DecisioningCoApplicantInput:
+      type: object
+      properties:
+        name:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantFullNameInput'
+        address:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantAddressInput'
+          - description: Cosigner residence information.
+          - example:
+              street: 4390 Norris Ln
+              street2: ''
+              city: Detroit
+              state: MI
+              zip: '48208'
+              residenceType: BUYING
+              residenceTimeInMonths: 60
+              residenceMonthlyPayment: 2000
+        previousAddress:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantAddressInput'
+          - description: 'Cosigner previous residence information. Recommended when the cosigner has lived at the current
+
+              address for less than 2 years.
+
+              '
+          - example:
+              street: 2198 Dorothy Tr
+              street2: ''
+              city: Detroit
+              state: MI
+              zip: '48216'
+              residenceType: OTHER
+              residenceTimeInMonths: 12
+              residenceMonthlyPayment: 0
+        phone:
+          type: string
+          example: '5554443333'
+          maxLength: 10
+          minLength: 10
+          pattern: ^[2-9][0-9]{9}$
+          description: A valid 10 digit phone number.
+        email:
+          type: string
+          example: fake@example.com
+          format: email
+          minLength: 1
+          description: A valid email address.
+        ssn:
+          type: string
+          example: '666554444'
+          maxLength: 9
+          minLength: 9
+          pattern: ^\d{9}$
+          description: 'Social Security Number / ITIN in US. Note: The application is only submitted to lenders that support ITIN.
+
+            '
+        maritalStatus:
+          allOf:
+          - $ref: '#/components/schemas/MaritalStatus'
+        educationLevel:
+          allOf:
+          - $ref: '#/components/schemas/EducationLevel'
+        employment:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantEmploymentInput'
+        previousEmployment:
+          allOf:
+          - $ref: '#/components/schemas/ApplicantEmploymentInput'
+        dob:
+          type: string
+          format: date
+          pattern: ^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$
+          example: '1990-01-30'
+          description: Date of Birth `YYYY-MM-DD`. Must be older than 18 and younger than 120.
+        incomeReported:
           type: number
           format: float
-          example: 2499.99
-        disclaimer:
-          type: string
-          description: Disclaimer for the rebate.
-          example: Veterans only Rebate
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Rebate expiry date.
-          example: 12-01-2024
-        isDiscount:
-          type: boolean
-          default: false
-          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation.
-          example: true
-        isPrivateOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is a private offer for the applicant.
-          example: false
-        isQualifiedOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
-          example: true
-        name:
-          type: string
-          description: Description of the rebate to be shown to the customer.
-          example: VA Rebate
-        programId:
-          type: string
-          description: Unique identifier for the rebate program.
-          example: VA_1234
-        type:
-          $ref: '#/components/schemas/RebateType'
-    schemas-FeeCodeInput:
-      example: SHIPPING_FEE
-      description: 'Default is `OTHER`. <br> Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman. <br> All fee types will be taxable based upon the appropriate jurisdiction with the exception of `OTHER`.'
-      type: string
-      enum:
-      - DOC_FEE
-      - OTHER
-      - SHIPPING_FEE
-      - TIRE_FEE
-      - TITLE_REG
+          deprecated: true
+          description: Total gross monthly income from employment and other sources. _Deprecated - Use `employmentIncome` and `otherIncome` fields instead._
+        employmentIncome:
+          type: number
+          format: float
+          example: 10000
+          description: Gross monthly income from employment. _Required if `employmentStatus` is "EMPLOYED", "SELF_EMPLOYED" or "MILITARY"._
+        otherIncome:
+          type: array
+          description: Monthly income from sources other than employment.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/OtherIncomeItemInput'
+        relationship:
+          deprecated: true
+          allOf:
+          - $ref: '#/components/schemas/Relationship'
+          description: _Deprecated - Use `relationshipCode` instead._
+        relationshipCode:
+          allOf:
+          - $ref: '#/components/schemas/Relationship'
+      required:
+      - name
+      - address
+      - phone
+      - email
+      - ssn
+      - employment
+      - dob
   parameters:
     LoanApplicationIdParam:
       in: path

@@ -85,20 +85,38 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    DealmakerExistsErrorProperties:
+    FeeCodeInput:
+      example: SHIPPING_FEE
+      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
+      type: string
+      enum:
+      - DOC_FEE
+      - OTHER
+      - SHIPPING_FEE
+      - TIRE_FEE
+      - TITLE_REG
+    DealmakerCreditAppOfferPreferencesInput:
       type: object
-      properties:
-        code:
-          allOf:
-          - $ref: '#/components/schemas/code'
-          example: 409
-        message:
-          allOf:
-          - $ref: '#/components/schemas/message'
-          example: 'Dealmaker already exists for referenceId: my-reference-id'
+      title: Offer Preferences
+      description: Offer Preferences for retail finance.
       required:
-      - code
-      - message
+      - downPayment
+      - term
+      properties:
+        apr:
+          allOf:
+          - $ref: '#/components/schemas/Apr'
+          minimum: 0
+        downPayment:
+          $ref: '#/components/schemas/DownPayment'
+        incentiveOption:
+          $ref: '#/components/schemas/IncentiveOption'
+        isSubvented:
+          $ref: '#/components/schemas/IsSubvented'
+        term:
+          $ref: '#/components/schemas/Term'
+        pricePlan:
+          $ref: '#/components/schemas/PricePlan'
     SimulatedDecisionState:
       type: string
       title: Decision State
@@ -111,207 +129,314 @@ components:
       - APPROVED_WITH_COUNTEROFFER
       - CONDITIONAL
       - CONDITIONAL_WITH_COUNTEROFFER
-    DealmakerCreditAppRebateInput:
+    SimulateEnvironment:
+      type: string
+      title: Environment
+      description: Use `LENDER_TEST` to test End to End with R1/DT Lender Test Environment. Use `AUTOFI_TEST` to test with the AutoFi Test Environment (requires an array of `decisions` to be simulated). Defaults to `AUTOFI_TEST`.
+      example: AUTOFI_TEST
+      enum:
+      - LENDER_TEST
+      - AUTOFI_TEST
+    NonOemRebateInput:
       allOf:
       - $ref: '#/components/schemas/RebateBaseInput'
       properties:
-        disclaimer:
-          type: string
-          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
-          example: Rebate Disclaimer
-          minLength: 1
-        programId:
-          type: string
-          description: Unique identifier for the rebate program. OEM rebates will require this field.
-          example: VA_1234
-          minLength: 1
-      required:
-      - amount
-      - disclaimer
-      - name
-      - programId
-    FeePlacement:
-      type: string
-      enum:
-      - GROSS_CAP
-      - DUE_AT_SIGNING
-      description: '`GROSS_CAP` means that the fee will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the fee will be added to the Due at Signing Calculation and thus deducted from the down payment.'
-    FeeCodeInput:
-      example: SHIPPING_FEE
-      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
-      type: string
-      enum:
-      - DOC_FEE
-      - OTHER
-      - SHIPPING_FEE
-      - TIRE_FEE
-      - TITLE_REG
-    IsSubvented:
-      type: boolean
-      description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
-    DealmakerExistsError:
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+        taxRule:
+          type:
+          - string
+          - 'null'
+          default: null
+          enum:
+          - DEDUCT_AFTER_TAX
+          - DEDUCT_BEFORE_TAX
+          - null
+          example: DEDUCT_AFTER_TAX
+          description: 'Indicates how the rebate should be applied with respect to the tax calculation.
+
+            When `null` or not provided, the default tax behavior is applied for the given jurisdiction.
+
+
+            `DEDUCT_AFTER_TAX`: The rebate amount is deducted **_after_** tax is calculated.
+
+
+            `DEDUCT_BEFORE_TAX`: The rebate amount is deducted **_before_** tax is calculated.
+
+            '
+    errors:
+      type: array
+      items:
+        properties:
+          description:
+            type: string
+            description: Error description.
+    ValidationError:
+      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
       allOf:
-      - $ref: '#/components/schemas/Dealmaker'
-      - $ref: '#/components/schemas/DealmakerExistsErrorProperties'
-    DealmakerCreditAppExistsError:
+      - $ref: '#/components/schemas/errors'
+    DealmakerCreditAppNewVehicleInput:
       allOf:
-      - $ref: '#/components/schemas/DealmakerExistsErrorProperties'
+      - $ref: '#/components/schemas/DealmakerCreditAppBaseVehicleInput'
       properties:
-        creditApp:
-          $ref: '#/components/schemas/DealmakerCreditApp'
+        age:
+          type: string
+          description: Vehicle age.
+          enum:
+          - NEW
       required:
-      - creditApp
-    TaxName:
-      type: string
-      description: "The name of the tax.  \n**Note**: if \"Total Taxes\" value is received, it is the total tax amount for the vehicle. Does not include product taxes.\n"
-    schemas-FinanceFees:
+      - age
+      - dealerRetailPrice
+      - invoice
+      - make
+      - model
+      - modelCode
+      - msrp
+      - trim
+      - vin
+      - year
+    Apr:
+      type: number
+      format: float
+      example: 0.02
+      description: Annual percentage rate in decimals e.g. if the apr is 2% this should be 0.02
+    Dealmaker:
+      type: object
+      required:
+      - referenceId
+      - url
+      properties:
+        referenceId:
+          $ref: '#/components/schemas/ReferenceIdSchema'
+        url:
+          $ref: '#/components/schemas/ConsumerUrlSchema'
+    FinanceTaxes:
       type: array
       title: Finance
       items:
         properties:
           amount:
-            $ref: '#/components/schemas/FeeAmount'
-          code:
-            $ref: '#/components/schemas/FeeCode'
+            $ref: '#/components/schemas/TaxAmount'
           name:
-            $ref: '#/components/schemas/FeeName'
-    DealmakerCreditAppApplicantInput:
-      type: object
-      title: Applicant
-      description: Applicant Information.
-      required:
-      - email
-      - name
-      properties:
-        address:
-          type: object
-          title: Address
-          properties:
-            street:
-              type: string
-              description: Applicant street line.
-              example: 1234 Main St
-            street2:
-              type: string
-              description: Applicant street line 2.
-              example: Apt B
-            city:
-              type: string
-              description: Applicant city of residence.
-              example: Madison
-            state:
-              type: string
-              description: Two character code for state (US).
-              example: WI
-            zip:
-              type: string
-              description: Zip code.
-              example: 53714
-        email:
-          $ref: '#/components/schemas/EmailInput'
-        name:
-          $ref: '#/components/schemas/ApplicantFullNameInput'
-        phone:
-          $ref: '#/components/schemas/PhoneInput'
-    AppliedLeasePricingStackFigures:
-      properties:
-        appliedToCap:
-          description: Breakdown of capitalized costs.
-          properties:
-            downPayment:
-              description: Cash applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
-            rebates:
-              description: Rebates applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
-            tradeIn:
-              description: Trade-in applied to the capitalized costs.
-              example: 0
-              format: float
-              type:
-              - number
-              - 'null'
-          type: object
-        appliedToSigning:
-          description: Breakdown of costs applied at signing.
-          properties:
-            downPayment:
-              description: Cash applied to signing costs.
-              example: 2000
-              format: float
-              type:
-              - number
-              - 'null'
-            rebates:
-              description: Rebates applied to signing costs.
-              example: 2499.99
-              format: float
-              type:
-              - number
-              - 'null'
-            tradeIn:
-              description: Trade-in applied to signing costs.
-              example: 3600
-              format: int64
-              type:
-              - number
-              - 'null'
-          type: object
-    TradeInLeaseTermsSchema:
-      description: Lease terms applied to the trade-in vehicle.
+            $ref: '#/components/schemas/TaxName'
+          taxableAmount:
+            $ref: '#/components/schemas/TaxableAmount'
+          taxLineItems:
+            $ref: '#/components/schemas/TaxLineItems'
+    LoanApplicationData:
       type: object
       properties:
-        annualMiles:
+        afExperienceCompleted:
+          type:
+          - boolean
+          - 'null'
+          description: This flag is `true` when a customer has completed the last step in the AutoFi experience.
+        appliedFees:
+          description: Fees applied to the loan application
+          anyOf:
+          - $ref: '#/components/schemas/schemas-FinanceFees'
+          - $ref: '#/components/schemas/LeaseFees'
+        appliedTaxes:
+          description: Taxes applied to the loan application
+          anyOf:
+          - $ref: '#/components/schemas/FinanceTaxes'
+          - $ref: '#/components/schemas/LeaseTaxes'
+        creditScore:
           type: integer
-          example: 15000
-          description: Miles a leased vehicle can be driven annually before the penalty is triggered.
+          minimum: 300
+          maximum: 999
+          description: Credit score. Number between 300 and 999.
+        decisions:
+          type:
+          - array
+          - 'null'
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Decision'
+        loanApplicationId:
+          type: string
+        offerAvailable:
+          type:
+          - boolean
+          - 'null'
+          description: This flag is `true` if an offer is available to be displayed to a consumer.
+        offerPreferences:
+          type: object
+          properties:
+            annualMileage:
+              type:
+              - integer
+              - 'null'
+              example: 1
+              minimum: 1
+              description: Miles the consumer would prefer when leasing a vehicle
+            apr:
+              type: number
+              format: float
+              description: Annual percentage rate in decimals
+            downPayment:
+              type: integer
+              example: 1
+              minimum: 0
+              description: Amount the consumer is putting down towards the vehicle
+            incentiveOption:
+              allOf:
+              - $ref: '#/components/schemas/IncentiveOption'
+              description: 'Default: `LOWEST_MONTHLY`'
+            isSubvented:
+              type: boolean
+              description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
+            requestedOfferType:
+              allOf:
+              - $ref: '#/components/schemas/CreditOfferType'
+              description: How the customer is financing the vehicle - "FINANCE" or "LEASE".
+            term:
+              type: integer
+              example: 1
+              minimum: 1
+              description: Length of term in months
+        pricingStack:
+          description: Pricing information for a loan application. Only available after the state is `ACCEPTED`.
+          oneOf:
+          - $ref: '#/components/schemas/FinancePricingStack'
+          - $ref: '#/components/schemas/LeasePricingStack'
+        referenceId:
+          type:
+          - string
+          - 'null'
+          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
+        selectedProducts:
+          type: array
+          description: Selected products.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/BaseSelectedProduct'
+            type: object
+            properties:
+              monthlyPayment:
+                type:
+                - number
+                - 'null'
+                example: 1
+                format: float
+                minimum: 0
+                description: Monthly payment over the finance term including the finance charge.
+        state:
+          description: '<p>The current state of the loan application within the decisioning flow. The various states are detailed in the state diagram below.</p>
+
+            <img src="/diagrams/loanApplicationStates-API.mmd.svg" alt="Loan Application State Diagram" style="width: 100%; max-width: 600px" />
+
+            '
+          type:
+          - string
+          - 'null'
+          enum:
+          - ACCEPTED
+          - APPROVED
+          - BEGAN_APPLICATION
+          - DECLINED
+          - ERROR
+          - FI_COMPLETED
+          - PENDING
+          - SUBMITTED
+        tradeIn:
+          description: Trade in information.
+          type: object
+          allOf:
+          - $ref: '#/components/schemas/TradeIn'
+    DealmakerCreditAppBaseVehicleInput:
+      type: object
+      properties:
+        age:
+          type: string
+          description: Vehicle age.
+          enum:
+          - NEW
+        bodyType:
+          type: string
+          example: Fastback
+          description: Vehicle body type.
+        color:
+          type: string
+          example: blue
+          description: Vehicle color.
+        dealerRetailPrice:
+          type: integer
+          example: 30995
+          description: The vehicle's price.
           exclusiveMinimum: 0
-        monthlyPayment:
+        invoice:
           type: number
           format: float
-          example: 350.45
-          description: Monthly payment for leased vehicle.
+          description: The initial price for the vehicle from the manufacturer.
+          example: 29850.75
           exclusiveMinimum: 0
-        numRemainingPayments:
+        fuelType:
+          description: Fuel type used by the vehicle engine.
+          type: string
+          default: ELECTRIC
+          example: ELECTRIC
+          enum:
+          - ELECTRIC
+          - GASOLINE
+          - HYBRID
+        make:
+          type: string
+          description: Vehicle make.
+          example: FORD
+          minLength: 1
+        mileage:
           type: integer
-          example: 6
+          example: 35684
           minimum: 0
-          description: Number of payments remaining on the lease.
-        penaltyPerExcessMile:
+          description: Number of miles on the vehicle.
+        model:
+          type: string
+          description: Vehicle model.
+          example: MUSTANG
+          minLength: 1
+        modelCode:
+          type: string
+          title: Model Code
+          description: The model code provided by the manufacturer.
+          example: P8T
+          minLength: 1
+        msrp:
           type: number
           format: float
-          example: 0.25
           minimum: 0
-          description: Penalty per excess mile driven above the `annualMiles` allowed by the lease.
-        term:
+          example: 34950.65
+          description: Manufacturer Suggested Retail Price.
+        photoUrl:
+          type: string
+          format: url
+          description: A valid URL to be used for showing the vehicle within the offer experience and customer profile page in AutoFi Dealer Portal.
+          example: https://example.com/images/1.jpeg
+        stockNumber:
+          type: string
+          description: Vehicle stock number in dealer's inventory. Displayed in customer profile page in AutoFi Dealer Portal.
+          example: FCL1425
+        trim:
+          type: string
+          title: Trim
+          description: Vehicle trim level.
+          example: GT
+          minLength: 1
+        vin:
+          type: string
+          pattern: ^[a-zA-Z0-9]{17}$
+          description: Vehicle Identification Number. Must be 17 alphanumeric characters.
+          minLength: 17
+          maxLength: 17
+          example: 1FATP8FFXJ5139341
+        year:
           type: integer
-          example: 24
-          description: Length of lease term in months.
-          exclusiveMinimum: 0
-    ValidationErrorSchema:
-      type: object
-      properties:
-        code:
-          $ref: '#/components/schemas/code'
-        message:
-          $ref: '#/components/schemas/message'
-        errors:
-          $ref: '#/components/schemas/ValidationError'
-    PhoneInput:
-      type: string
-      example: '5554443333'
-      maxLength: 10
-      minLength: 10
-      pattern: ^[2-9][0-9]{9}$
-      description: A valid 10 digit phone number.
+          format: int32
+          description: Vehicle year.
+          minimum: 1900
+          example: 2021
     Decision:
       type: object
       properties:
@@ -443,37 +568,45 @@ components:
               items:
                 type: string
                 example: Applicant will need to show a valid government issued photo ID card for date of birth verification
-    price:
-      type: number
-      example: 100
-      format: float
-      minimum: 0
-      description: Pretax price.
-    TradeInInputSchema:
+    LeaseFees:
+      type: array
+      title: Lease
+      items:
+        properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
+          code:
+            $ref: '#/components/schemas/FeeCode'
+          feePlacement:
+            $ref: '#/components/schemas/FeePlacement'
+          name:
+            $ref: '#/components/schemas/FeeName'
+    RebateBaseInput:
       type: object
-      title: Trade-In
-      description: Trade-in collateral.
-      oneOf:
-      - $ref: '#/components/schemas/FinanceTradeInSchema'
-      - $ref: '#/components/schemas/LeaseTradeInSchema'
-      - $ref: '#/components/schemas/OwnedTradeInSchema'
-      discriminator:
-        propertyName: ownership
-        mapping:
-          FINANCED: '#/components/schemas/FinanceTradeInSchema'
-          LEASED: '#/components/schemas/LeaseTradeInSchema'
-          OWNED: '#/components/schemas/OwnedTradeInSchema'
-    DealmakerCreditAppTaxInput:
-      type: object
-      title: Tax
-      description: Tax information provided by the partner. If not provided, AutoFi's tax engine will be used for tax calculations.
-      required:
-      - total
       properties:
-        total:
-          allOf:
-          - $ref: '#/components/schemas/schemas-tax'
-          title: Total Tax
+        amount:
+          type: number
+          example: 2499.99
+          format: float
+          description: The rebate amount.
+          exclusiveMinimum: 0
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
+          example: Rebate Disclaimer
+        isDiscount:
+          type: boolean
+          default: false
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
+        isQualifiedOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+        name:
+          type: string
+          minLength: 1
+          description: Description of the rebate to be shown to the customer.
+          example: VA Rebate
     BasePricingStack:
       type: object
       description: Fields in common for FINANCE and LEASE.
@@ -509,133 +642,343 @@ components:
           format: float
           example: 5000.75
           description: The difference between the value of the trade-in vehicle and its payoff amount. Will always be 0 if the `isApplied` field of the trade-in vehicle is `false`.
-    RebateBaseInput:
+    TradeInCondition:
+      description: Condition for the trade-in vehicle
+      type: string
+      enum:
+      - EXCELLENT
+      - FAIR
+      - GOOD
+      - POOR
+      - VERY_GOOD
+    RebateType:
+      example: CASH
+      description: Default is `CASH`.
+      type: string
+      enum:
+      - CASH
+      - FINANCE_RATE
+      - LEASE_RATE
+    TaxPlacement:
+      type: string
+      enum:
+      - BIWEEKLY
+      - CAPITALIZED
+      - DUE_AT_SIGNING
+      - MONTHLY
+      description: '`CAPITALIZED` means that the tax will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the tax will be added to the Due at Signing Calculation and thus deducted from the down payment. `BIWEEKLY` and `MONTHLY` taxes are taxes applied to the biweekly or monthly payments.'
+    schemas-FinanceFees:
+      type: array
+      title: Finance
+      items:
+        properties:
+          amount:
+            $ref: '#/components/schemas/FeeAmount'
+          code:
+            $ref: '#/components/schemas/FeeCode'
+          name:
+            $ref: '#/components/schemas/FeeName'
+    ApplicantFullNameInput:
+      allOf:
+      - $ref: '#/components/schemas/ApplicantBaseNameInput'
+      title: Name
+      properties:
+        middle:
+          description: Middle name
+          example: Alejandra
+          type: string
+        suffix:
+          description: Suffix indicating generational title
+          example: JR
+          type: string
+          enum:
+          - JR
+          - SR
+          - I
+          - II
+          - III
+          - IV
+          - V
+    SimulatedDecision:
+      title: Simulated Decision
+      properties:
+        decision:
+          $ref: '#/components/schemas/SimulatedDecisionState'
+        delay:
+          type: integer
+          example: 75000
+          description: Specify how long it should take for this simulated decision to return in milliseconds.
+        lender:
+          type: string
+          example: CHASE
+          description: "The lender that decision should be simulated for.\nThese are the lender codes available to use:\n  - ALLY \n  - BOFA \n  - CHASE \n  - EXETER \n  - FIFS  \n  - FMCC \n  - GLS \n  - GMFL \n  - HBAN \n  - LAFSNC \n  - RBC \n  - SANT \n  - SCF \n  - SETF \n  - TRICOR \n  - VROOM \n  - WEST\n"
+        middleman:
+          allOf:
+          - $ref: '#/components/schemas/DecisionMiddlemen'
+          description: The middleman that the decision should be simulated from.
+      required:
+      - decision
+      - lender
+    ReferenceIdBase:
+      type: string
+      title: Reference ID
+      minLength: 1
+      example: my-reference-id
+    TaxItemLease:
       type: object
+      description: Lease Tax Item.
+      properties:
+        amount:
+          description: Tax item amount.
+          type: number
+          format: float
+        description:
+          description: Tax item description.
+          type: string
+        descriptionI18n:
+          description: Tax item description for locale.
+          type: string
+    VehicleVinOnlyInput:
+      type: object
+      title: VIN Only
+      description: Vehicle Information.
+      required:
+      - vin
+      properties:
+        vin:
+          allOf:
+          - $ref: '#/components/schemas/VinBaseSchema'
+          - example: 1FATP8FFXJ5139341
+            description: Vehicle Identification Number. Must be 17 alphanumeric characters. The vehicle must exist in the dealer's inventory.
+    TaxName:
+      type: string
+      description: "The name of the tax.  \n**Note**: if \"Total Taxes\" value is received, it is the total tax amount for the vehicle. Does not include product taxes.\n"
+    PricePlan:
+      type: string
+      description: This field can be used to denote a discount pricing program. Some manufacturers may allow eligible employees and their family members additional savings on the purchase of new vehicles.
+      example: X
+    ApplicantBaseNameInput:
+      title: Name
+      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
+      type: object
+      required:
+      - first
+      - last
+      properties:
+        first:
+          description: First name
+          example: Mrs. Jamie-Lynn
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+        last:
+          description: Last name
+          example: O'Rourke-Van Winkle
+          type: string
+          minLength: 1
+          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
+    DealmakerCreditAppFinanceFeeInput:
+      type: object
+      title: Fee
+      description: Fee information.
+      required:
+      - amount
+      - code
+      - name
       properties:
         amount:
           type: number
-          example: 2499.99
+          example: 249.99
           format: float
-          description: The rebate amount.
-          exclusiveMinimum: 0
+          minimum: 0
+          description: Fee amount paid by the consumer.
+        code:
+          allOf:
+          - $ref: '#/components/schemas/FeeCodeInput'
+          description: 'Indicates how the fee should be applied to the pricing stack. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
+        name:
+          type: string
+          minLength: 1
+          description: Fee name or description displayed in the AutoFi consumer experience.
+    ValidationErrorSchema:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/code'
+        message:
+          $ref: '#/components/schemas/message'
+        errors:
+          $ref: '#/components/schemas/ValidationError'
+    IsSubvented:
+      type: boolean
+      description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
+    FeePlacement:
+      type: string
+      enum:
+      - GROSS_CAP
+      - DUE_AT_SIGNING
+      description: '`GROSS_CAP` means that the fee will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the fee will be added to the Due at Signing Calculation and thus deducted from the down payment.'
+    DealmakerExistsErrorProperties:
+      type: object
+      properties:
+        code:
+          allOf:
+          - $ref: '#/components/schemas/code'
+          example: 409
+        message:
+          allOf:
+          - $ref: '#/components/schemas/message'
+          example: 'Dealmaker already exists for referenceId: my-reference-id'
+      required:
+      - code
+      - message
+    TaxableAmount:
+      type: number
+      example: 34317.99
+      format: float
+      minimum: 0
+      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" /> Taxable amount.</p>'
+    PricingStackRebateOutput:
+      type: object
+      title: Rebate
+      properties:
+        amount:
+          type: number
+          format: float
+          example: 2499.99
         disclaimer:
           type: string
-          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
-          example: Rebate Disclaimer
+          description: Disclaimer for the rebate.
+          example: Veterans only Rebate
+        expiryDate:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: Rebate expiry date.
+          example: 12-01-2024
         isDiscount:
           type: boolean
           default: false
-          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation (unless tax is submitted).
+          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation.
+          example: true
+        isPrivateOffer:
+          type: boolean
+          default: false
+          description: Indicates that the rebate is a private offer for the applicant.
+          example: false
         isQualifiedOffer:
           type: boolean
           default: false
           description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
+          example: true
         name:
           type: string
-          minLength: 1
           description: Description of the rebate to be shown to the customer.
           example: VA Rebate
-    FeeName:
-      type: string
-      description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
-      example: Shipping fee.
-    DealmakerCreditAppRebatesInput:
-      type: array
-      title: Rebate
-      description: 'Rebates applied to the credit application.
-
-
-        This field can be used to include qualified rebates (i.e. selected by the customer). The `programId` is required to
-
-        match these up with the correct rebate program.
-
-        '
-      items:
-        $ref: '#/components/schemas/DealmakerCreditAppRebateInput'
-    TaxLineItems:
-      type: array
-      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" />The breakdown of the tax amount by jurisdiction. Each tax line item contains the tax rate and corresponding amount for each jurisdiction or tax authority.</p>'
-      items:
-        properties:
-          jurisdiction:
-            type: object
-            description: The jurisdiction responsible for the tax line item.
-            properties:
+        programId:
+          type: string
+          description: Unique identifier for the rebate program.
+          example: VA_1234
+        type:
+          $ref: '#/components/schemas/RebateType'
+    AppliedLeasePricingStackFigures:
+      properties:
+        appliedToCap:
+          description: Breakdown of capitalized costs.
+          properties:
+            downPayment:
+              description: Cash applied to the capitalized costs.
+              example: 0
+              format: float
               type:
-                type: string
-                example: STATE
-                description: Type of jurisdiction.
-                enum:
-                - STATE
-                - CITY
-                - COUNTY
-                - DISTRICT
-              name:
-                type: string
-                example: COLORADO
-                description: Name of the jurisdiction.
-              imposition:
-                type: string
-                example: General Sales and Use Tax
-                description: Name of the tax imposition.
-          tax:
-            type: object
-            description: Tax rate and amount calculated for the jurisdiction.
-            properties:
-              rate:
-                type: number
-                format: float
-                minimum: 0
-                maximum: 1
-                example: 0.029
-                description: Tax rate.
-              amount:
-                type: number
-                format: float
-                minimum: 0
-                example: 995.22
-                description: Tax amount.
-    SimulateEnvironment:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to the capitalized costs.
+              example: 0
+              format: float
+              type:
+              - number
+              - 'null'
+          type: object
+        appliedToSigning:
+          description: Breakdown of costs applied at signing.
+          properties:
+            downPayment:
+              description: Cash applied to signing costs.
+              example: 2000
+              format: float
+              type:
+              - number
+              - 'null'
+            rebates:
+              description: Rebates applied to signing costs.
+              example: 2499.99
+              format: float
+              type:
+              - number
+              - 'null'
+            tradeIn:
+              description: Trade-in applied to signing costs.
+              example: 3600
+              format: int64
+              type:
+              - number
+              - 'null'
+          type: object
+    DealmakerCreditAppExistsError:
+      allOf:
+      - $ref: '#/components/schemas/DealmakerExistsErrorProperties'
+      properties:
+        creditApp:
+          $ref: '#/components/schemas/DealmakerCreditApp'
+      required:
+      - creditApp
+    EmailInput:
       type: string
-      title: Environment
-      description: Use `LENDER_TEST` to test End to End with R1/DT Lender Test Environment. Use `AUTOFI_TEST` to test with the AutoFi Test Environment (requires an array of `decisions` to be simulated). Defaults to `AUTOFI_TEST`.
-      example: AUTOFI_TEST
+      example: fake@example.com
+      format: email
+      minLength: 1
+      title: Email
+      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
+    ProductCategory:
+      type: string
+      title: Product Category
+      description: Product category.
+      example: VSC
       enum:
-      - LENDER_TEST
-      - AUTOFI_TEST
-    ValidationError:
-      description: "Array of validation input errors found in the payload:\n  - Required field not provided\n  - Field can not be null\n  - Field must be an object\n  - Field is not a defined field\n  - Field is invalid\n"
-      allOf:
-      - $ref: '#/components/schemas/errors'
-    DealmakerCreditAppNonOemRebatesInput:
-      type: array
-      title: Non OEM Rebate
-      description: 'Non OEM Rebates applied to the credit application.
-
-
-        This field can be used to add special rebates that are not available from standard rebate providers.
-
-        For example, government rebates for electric vehicles are often not available from standard rebate providers.
-
-
-        Additionally, the `taxRule` can be used to specify how the rebate should be applied with respect to tax.
-
-        '
-      items:
-        $ref: '#/components/schemas/DealmakerCreditAppNonOemRebateInput'
-      example:
-      - amount: 7500
-        disclaimer: Only applicable at time of purchase for registered dealers.
-        isDiscount: false
-        isPrivateOffer: false
-        isQualifiedOffer: false
-        name: Federal EV Tax Credit
-        taxRule: DEDUCT_AFTER_TAX
-    DealmakerCreditAppVehicleInput:
-      allOf:
-      - $ref: '#/components/schemas/DealmakerCreditAppNewVehicleInput'
-      title: Vehicle
-      description: The vehicle associated with the credit application. Only `NEW` vehicles are currently supported.
+      - GAP_WAIVER
+      - OTHER
+      - VSC
+    ProductBaseInput:
+      type: object
+      title: Product
+      description: Product information.
+      properties:
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        name:
+          type: string
+          description: Product description.
+          example: Extended Warranty
+        price:
+          $ref: '#/components/schemas/price'
+        termMiles:
+          type: integer
+          description: Product mileage limit.
+          example: 100000
+        termMonths:
+          type: integer
+          description: Product duration.
+          example: 60
     TradeInSchema:
       description: Trade in common details.
       type: object
@@ -678,133 +1021,138 @@ components:
           example: 2018
           minimum: 1990
           description: Trade-in vehicle year.
-    ApplicantBaseNameInput:
-      title: Name
-      description: Names must start with one or more alphanumeric characters, and may be followed by one special character as long as that special character is followed by one or more alphanumeric characters. A name may also end with a period.
-      type: object
-      required:
-      - first
-      - last
-      properties:
-        first:
-          description: First name
-          example: Mrs. Jamie-Lynn
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-        last:
-          description: Last name
-          example: O'Rourke-Van Winkle
-          type: string
-          minLength: 1
-          pattern: ^[a-zA-ZÀ-ÿ0-9#]+(([',. -]+[a-zA-ZÀ-ÿ0-9 ])?[a-zA-ZÀ-ÿ0-9 .-/#’&]*)*$
-    ConsumerUrlSchema:
-      type: string
-      title: Consumer URL
-      example: https://example.com
-      format: uri
-      minLength: 1
-      description: URL to the consumer experience. The url expires 30 days after creation.
-    TradeInCondition:
-      description: Condition for the trade-in vehicle
-      type: string
-      enum:
-      - EXCELLENT
-      - FAIR
-      - GOOD
-      - POOR
-      - VERY_GOOD
-    schemas-tax:
-      type: number
-      example: 1745.25
-      format: float
-      minimum: 0
-      description: The total taxes to be applied (should not include F&I Product taxes).
-    NonOemRebateInput:
-      allOf:
-      - $ref: '#/components/schemas/RebateBaseInput'
-      properties:
-        isPrivateOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is a private offer for the applicant.
-        taxRule:
-          type:
-          - string
-          - 'null'
-          default: null
-          enum:
-          - DEDUCT_AFTER_TAX
-          - DEDUCT_BEFORE_TAX
-          - null
-          example: DEDUCT_AFTER_TAX
-          description: 'Indicates how the rebate should be applied with respect to the tax calculation.
-
-            When `null` or not provided, the default tax behavior is applied for the given jurisdiction.
-
-
-            `DEDUCT_AFTER_TAX`: The rebate amount is deducted **_after_** tax is calculated.
-
-
-            `DEDUCT_BEFORE_TAX`: The rebate amount is deducted **_before_** tax is calculated.
-
-            '
-    FinanceTaxes:
-      type: array
-      title: Finance
-      items:
-        properties:
-          amount:
-            $ref: '#/components/schemas/TaxAmount'
-          name:
-            $ref: '#/components/schemas/TaxName'
-          taxableAmount:
-            $ref: '#/components/schemas/TaxableAmount'
-          taxLineItems:
-            $ref: '#/components/schemas/TaxLineItems'
-    CreateDealmakerInput:
+    CreateDealmakerCreditAppInput:
       type: object
       required:
       - applicant
       - dealer
+      - offerPreferences
       - referenceId
       - vehicle
       properties:
         applicant:
-          type: object
-          required:
-          - email
-          - name
-          properties:
-            email:
-              allOf:
-              - $ref: '#/components/schemas/EmailInput'
-            name:
-              allOf:
-              - $ref: '#/components/schemas/ApplicantBaseNameInput'
-            phone:
-              allOf:
-              - $ref: '#/components/schemas/PhoneInput'
+          $ref: '#/components/schemas/DealmakerCreditAppApplicantInput'
+        callbackUrl:
+          type: string
+          example: https://my-domain.com/customers/1/updateCreditApp
+          format: uri
+          minLength: 1
+          description: A valid URL to receive responses when there is a change in state.
         dealer:
-          allOf:
-          - $ref: '#/components/schemas/DealerCodeOnlyInput'
-          - properties:
-              channel:
-                description: The dealer channel associated with the new loan application.
-                type: string
-                minLength: 1
+          $ref: '#/components/schemas/DealerCodeOnlyInput'
+        fees:
+          $ref: '#/components/schemas/DealmakerCreditAppFinanceFeesInput'
+        offerPreferences:
+          $ref: '#/components/schemas/DealmakerCreditAppOfferPreferencesInput'
+        products:
+          $ref: '#/components/schemas/DealmakerCreditAppProductsInput'
+        rebates:
+          $ref: '#/components/schemas/DealmakerCreditAppRebatesInput'
+        nonOemRebates:
+          $ref: '#/components/schemas/DealmakerCreditAppNonOemRebatesInput'
         referenceId:
-          allOf:
-          - $ref: '#/components/schemas/ReferenceIdInput'
+          $ref: '#/components/schemas/DealmakerCreditAppReferenceIdInput'
+        simulate:
+          $ref: '#/components/schemas/SimulateInput'
+        tax:
+          $ref: '#/components/schemas/DealmakerCreditAppTaxInput'
+        tradeIn:
+          $ref: '#/components/schemas/TradeInInputSchema'
         vehicle:
-          allOf:
-          - $ref: '#/components/schemas/VehicleVinOnlyInput'
-          - properties:
-              photoUrl:
-                type: string
-                format: url
-                example: https://example.com/my/vehicle/photo.jpg
-                description: A valid URL for displaying a photo of the vehicle within the consumer experience and the AutoFi Dealer Portal. When not provided, the photo from the dealer's inventory is used instead.
+          $ref: '#/components/schemas/DealmakerCreditAppVehicleInput'
+    DownPayment:
+      type: integer
+      title: Down Payment
+      description: Amount the consumer is putting down towards the vehicle.
+      example: 3000
+      minimum: 0
+    DealmakerCreditAppVehicleInput:
+      allOf:
+      - $ref: '#/components/schemas/DealmakerCreditAppNewVehicleInput'
+      title: Vehicle
+      description: The vehicle associated with the credit application. Only `NEW` vehicles are currently supported.
+    OwnedTradeInSchema:
+      description: Owned trade-in input details
+      type: object
+      title: Owned
+      required:
+      - amount
+      - make
+      - model
+      - ownership
+      - year
+      allOf:
+      - $ref: '#/components/schemas/TradeInSchema'
+      properties:
+        amount:
+          type: number
+          format: float
+          example: 5000.75
+          description: The value of the vehicle.
+        ownership:
+          type: string
+          example: OWNED
+          description: Trade-in ownership type.
+          enum:
+          - OWNED
+    BaseSelectedProduct:
+      type: object
+      description: Fields in common for FINANCE, CASH and LEASE.
+      properties:
+        mileage:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The mileage selected by the customer for a specific product (e.g. VSC).
+        name:
+          type:
+          - string
+          - 'null'
+          description: Name of the F&I product selected.
+        price:
+          $ref: '#/components/schemas/price'
+        referenceId:
+          $ref: '#/components/schemas/referenceId'
+        tax:
+          $ref: '#/components/schemas/tax'
+        taxableAmount:
+          $ref: '#/components/schemas/TaxableAmount'
+        taxLineItems:
+          $ref: '#/components/schemas/TaxLineItems'
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          example: 1
+          minimum: 0
+          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
+        total:
+          type:
+          - number
+          - 'null'
+          example: 1
+          format: float
+          minimum: 0
+          description: The total price of the product including the finance charge.
+      example:
+        mileage: 50000
+        name: Extended Warranty
+        price: 700
+        referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+        tax: 60.01
+        taxableAmount: 700
+        taxLineItems:
+        - jurisdiction:
+            name: COLORADO
+            type: STATE
+            imposition: General Sales and Use Tax
+          tax:
+            rate: 0.086
+            amount: 60.1
+        termMonths: 60
+        total: 760.01
     FinanceTradeInSchema:
       description: Finance trade-in input details
       title: Finance
@@ -837,45 +1185,303 @@ components:
           maximum: 999999
           minimum: 0
           description: The payoff amount the customer needs to pay to satisfy the terms of their vehicle loan.
-    ProductCategory:
-      type: string
-      title: Product Category
-      description: Product category.
-      example: VSC
-      enum:
-      - GAP_WAIVER
-      - OTHER
-      - VSC
-    tax:
-      type: number
-      example: 15.5
-      format: float
-      minimum: 0
-      description: "Tax amount for the product. Defaults to 0.  \n**Notes:** Does not include vehicle taxes.  \n  For vehicle specific taxes see `appliedTaxes.amount`.  \n  For Total taxes see `pricingStack.totalTaxes`.\n"
-    TaxPlacement:
-      type: string
-      enum:
-      - BIWEEKLY
-      - CAPITALIZED
-      - DUE_AT_SIGNING
-      - MONTHLY
-      description: '`CAPITALIZED` means that the tax will be added to the Gross Capitalization Cost of the lease. `DUE_AT_SIGNING` means that the tax will be added to the Due at Signing Calculation and thus deducted from the down payment. `BIWEEKLY` and `MONTHLY` taxes are taxes applied to the biweekly or monthly payments.'
     Term:
       type: integer
       title: Term
       description: Length of term in months.
       example: 24
       exclusiveMinimum: 0
-    Dealmaker:
+    FinancePricingStack:
+      title: Finance
       type: object
-      required:
-      - referenceId
-      - url
+      description: This fields are only applicable to `FINANCE`.
+      allOf:
+      - $ref: '#/components/schemas/BasePricingStack'
       properties:
+        downPayment:
+          type:
+          - integer
+          - 'null'
+          description: Amount the consumer is putting down towards the vehicle.
+          example: 3500.01
+        financeCharge:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Finance charge calculated based on the `amountFinanced`, `apr` and `termMonths`.
+          example: 345.01
+        taxItems:
+          type: array
+          description: Tax items have now been `deprecated` in favor of the standardized `appliedTaxes` field.
+          items:
+            type: object
+            allOf:
+            - $ref: '#/components/schemas/TaxItem'
+          deprecated: true
+          example:
+            name: Municipal Tax
+            price: 87.99
+            totalTax: 87.99
+        amountFinanced:
+          description: Total amount financed for the vehicle.
+          example: 2269.57
+        monthlyPayment:
+          description: Total monthly payment.
+        offerType:
+          description: Type of offer.
+        termMonths:
+          description: Duration of the `FINANCE` contract in months.
+          example: 48
+        totalTaxes:
+          description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 6513.67
+        totalFees:
+          description: Total amount of all fees.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 250
+    TradeInInputSchema:
+      type: object
+      title: Trade-In
+      description: Trade-in collateral.
+      oneOf:
+      - $ref: '#/components/schemas/FinanceTradeInSchema'
+      - $ref: '#/components/schemas/LeaseTradeInSchema'
+      - $ref: '#/components/schemas/OwnedTradeInSchema'
+      discriminator:
+        propertyName: ownership
+        mapping:
+          FINANCED: '#/components/schemas/FinanceTradeInSchema'
+          LEASED: '#/components/schemas/LeaseTradeInSchema'
+          OWNED: '#/components/schemas/OwnedTradeInSchema'
+    PartialBasePricingStack:
+      type: object
+      description: Fields in common for FINANCE and LEASE.
+      properties:
+        amountFinanced:
+          type:
+          - number
+          - 'null'
+          format: float
+        apr:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Annual percentage rate.
+          example: 0.02
+        buyRate:
+          description: Dealer financing rate.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 0.0275
+        monthlyPayment:
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 335.34
+        numberOfPayments:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          description: Number of payments to make.
+          example: 35
+        termMonths:
+          type:
+          - integer
+          - 'null'
+          description: Duration of the contract in months.
+        totalRebates:
+          type:
+          - integer
+          - 'null'
+          description: Total rebate amount.
+          example: 2499.99
+        totalOfPayments:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total paid for all payments.
+          example: 13736.9
+        totalProducts:
+          description: Total amount of all products including taxes.
+          type:
+          - number
+          - 'null'
+          format: float
+          example: 115.5
+    DealmakerCreditAppApplicantInput:
+      type: object
+      title: Applicant
+      description: Applicant Information.
+      required:
+      - email
+      - name
+      properties:
+        address:
+          type: object
+          title: Address
+          properties:
+            street:
+              type: string
+              description: Applicant street line.
+              example: 1234 Main St
+            street2:
+              type: string
+              description: Applicant street line 2.
+              example: Apt B
+            city:
+              type: string
+              description: Applicant city of residence.
+              example: Madison
+            state:
+              type: string
+              description: Two character code for state (US).
+              example: WI
+            zip:
+              type: string
+              description: Zip code.
+              example: 53714
+        email:
+          $ref: '#/components/schemas/EmailInput'
+        name:
+          $ref: '#/components/schemas/ApplicantFullNameInput'
+        phone:
+          $ref: '#/components/schemas/PhoneInput'
+    TaxItem:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+        price:
+          type:
+          - number
+          - 'null'
+          format: float
+        totalTax:
+          type:
+          - number
+          - 'null'
+          format: float
+    code:
+      type: integer
+      description: HTTP status code.
+    VinBaseSchema:
+      type: string
+      maxLength: 17
+      minLength: 17
+      pattern: ^[a-zA-Z0-9]{17}$
+    DealmakerCreditAppFinanceFeesInput:
+      type: array
+      title: Fee
+      description: Fees associated with the credit application.
+      items:
+        $ref: '#/components/schemas/DealmakerCreditAppFinanceFeeInput'
+    CreditOfferType:
+      type: string
+      title: Offer Type
+      description: How the customer is financing the vehicle - `FINANCE` or `LEASE`.
+      example: FINANCE
+      enum:
+      - FINANCE
+      - LEASE
+    FeeCode:
+      example: SHIPPING_FEE
+      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
+      type: string
+      enum:
+      - DOC_FEE
+      - OTHER
+      - SHIPPING_FEE
+      - TIRE_FEE
+      - TITLE_REG
+    IncentiveOption:
+      type: string
+      title: Incentive Option
+      description: The type of incentive the consumer is looking for.
+      default: LOWEST_MONTHLY
+      enum:
+      - LARGEST_REBATE
+      - LOWEST_APR
+      - LOWEST_MONTHLY
+    DealmakerCreditAppReferenceIdInput:
+      allOf:
+      - $ref: '#/components/schemas/ReferenceIdInput'
+      title: Reference ID
+    DealmakerCreditAppNonOemRebatesInput:
+      type: array
+      title: Non OEM Rebate
+      description: 'Non OEM Rebates applied to the credit application.
+
+
+        This field can be used to add special rebates that are not available from standard rebate providers.
+
+        For example, government rebates for electric vehicles are often not available from standard rebate providers.
+
+
+        Additionally, the `taxRule` can be used to specify how the rebate should be applied with respect to tax.
+
+        '
+      items:
+        $ref: '#/components/schemas/DealmakerCreditAppNonOemRebateInput'
+      example:
+      - amount: 7500
+        disclaimer: Only applicable at time of purchase for registered dealers.
+        isDiscount: false
+        isPrivateOffer: false
+        isQualifiedOffer: false
+        name: Federal EV Tax Credit
+        taxRule: DEDUCT_AFTER_TAX
+    ReferenceIdInput:
+      allOf:
+      - $ref: '#/components/schemas/ReferenceIdBase'
+      description: Partner's unique identifier for each Dealmaker loan application. An error is returned when a loan application previously created for the given `referenceId` is found.
+    DecisionMiddlemen:
+      type: string
+      enum:
+      - routeOne
+      - dealertrack
+    DealmakerCreditAppProductInput:
+      allOf:
+      - $ref: '#/components/schemas/ProductBaseInput'
+      properties:
+        name:
+          type: string
+          description: Product description.
+          example: Extended Warranty
+          minLength: 1
         referenceId:
-          $ref: '#/components/schemas/ReferenceIdSchema'
-        url:
-          $ref: '#/components/schemas/ConsumerUrlSchema'
+          type: string
+          title: Product Reference ID
+          description: Product identifier used to reference a product within a DMS.
+          example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+          minLength: 1
+        tax:
+          allOf:
+          - $ref: '#/components/schemas/tax'
+          description: Tax amount for the product.
+      required:
+      - category
+      - name
+      - price
+      - tax
+    message:
+      type: string
+      description: HTTP status description.
     LeaseTaxes:
       type: array
       title: Lease
@@ -887,25 +1493,19 @@ components:
             $ref: '#/components/schemas/FeeName'
           taxPlacement:
             $ref: '#/components/schemas/TaxPlacement'
-    referenceId:
-      type:
-      - string
-      - 'null'
-      title: Product Reference ID
-      example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
-      description: Product identifier used to reference a product within a DMS.
-    DealmakerCreditAppReferenceIdInput:
-      allOf:
-      - $ref: '#/components/schemas/ReferenceIdInput'
-      title: Reference ID
-    CreditOfferType:
+    DealmakerCreditAppProductsInput:
+      type: array
+      title: Product
+      description: Products associated with the credit application.
+      items:
+        $ref: '#/components/schemas/DealmakerCreditAppProductInput'
+    ConsumerUrlSchema:
       type: string
-      title: Offer Type
-      description: How the customer is financing the vehicle - `FINANCE` or `LEASE`.
-      example: FINANCE
-      enum:
-      - FINANCE
-      - LEASE
+      title: Consumer URL
+      example: https://example.com
+      format: uri
+      minLength: 1
+      description: URL to the consumer experience. The url expires 30 days after creation.
     LeaseTradeInSchema:
       description: Lease trade-in input details
       type: object
@@ -940,323 +1540,19 @@ components:
           description: Trade-in ownership type.
           enum:
           - LEASED
-    ApplicantFullNameInput:
-      allOf:
-      - $ref: '#/components/schemas/ApplicantBaseNameInput'
-      title: Name
-      properties:
-        middle:
-          description: Middle name
-          example: Alejandra
-          type: string
-        suffix:
-          description: Suffix indicating generational title
-          example: JR
-          type: string
-          enum:
-          - JR
-          - SR
-          - I
-          - II
-          - III
-          - IV
-          - V
-    errors:
+    DealmakerCreditAppRebatesInput:
       type: array
-      items:
-        properties:
-          description:
-            type: string
-            description: Error description.
-    TaxItemsLease:
-      type: object
-      description: Tax items applied to estimated lease payment calculation.
-      properties:
-        capitalized:
-          type:
-          - array
-          - 'null'
-          description: Capitalized tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        dueAtSigning:
-          type:
-          - array
-          - 'null'
-          description: Tax items due at signing.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        biweekly:
-          type:
-          - array
-          - 'null'
-          description: Bi-weekly tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-        monthly:
-          type:
-          - array
-          - 'null'
-          description: Monthly tax items.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/TaxItemLease'
-    DealmakerCreditAppProductsInput:
-      type: array
-      title: Product
-      description: Products associated with the credit application.
-      items:
-        $ref: '#/components/schemas/DealmakerCreditAppProductInput'
-    DealmakerCreditAppBaseVehicleInput:
-      type: object
-      properties:
-        age:
-          type: string
-          description: Vehicle age.
-          enum:
-          - NEW
-        bodyType:
-          type: string
-          example: Fastback
-          description: Vehicle body type.
-        color:
-          type: string
-          example: blue
-          description: Vehicle color.
-        dealerRetailPrice:
-          type: integer
-          example: 30995
-          description: The vehicle's price.
-          exclusiveMinimum: 0
-        invoice:
-          type: number
-          format: float
-          description: The initial price for the vehicle from the manufacturer.
-          example: 29850.75
-          exclusiveMinimum: 0
-        fuelType:
-          description: Fuel type used by the vehicle engine.
-          type: string
-          default: ELECTRIC
-          example: ELECTRIC
-          enum:
-          - ELECTRIC
-          - GASOLINE
-          - HYBRID
-        make:
-          type: string
-          description: Vehicle make.
-          example: FORD
-          minLength: 1
-        mileage:
-          type: integer
-          example: 35684
-          minimum: 0
-          description: Number of miles on the vehicle.
-        model:
-          type: string
-          description: Vehicle model.
-          example: MUSTANG
-          minLength: 1
-        modelCode:
-          type: string
-          title: Model Code
-          description: The model code provided by the manufacturer.
-          example: P8T
-          minLength: 1
-        msrp:
-          type: number
-          format: float
-          minimum: 0
-          example: 34950.65
-          description: Manufacturer Suggested Retail Price.
-        photoUrl:
-          type: string
-          format: url
-          description: A valid URL to be used for showing the vehicle within the offer experience and customer profile page in AutoFi Dealer Portal.
-          example: https://example.com/images/1.jpeg
-        stockNumber:
-          type: string
-          description: Vehicle stock number in dealer's inventory. Displayed in customer profile page in AutoFi Dealer Portal.
-          example: FCL1425
-        trim:
-          type: string
-          title: Trim
-          description: Vehicle trim level.
-          example: GT
-          minLength: 1
-        vin:
-          type: string
-          pattern: ^[a-zA-Z0-9]{17}$
-          description: Vehicle Identification Number. Must be 17 alphanumeric characters.
-          minLength: 17
-          maxLength: 17
-          example: 1FATP8FFXJ5139341
-        year:
-          type: integer
-          format: int32
-          description: Vehicle year.
-          minimum: 1900
-          example: 2021
-    DealmakerCreditAppNonOemRebateInput:
-      allOf:
-      - $ref: '#/components/schemas/NonOemRebateInput'
-      properties:
-        disclaimer:
-          type: string
-          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
-          example: Rebate Disclaimer
-          minLength: 1
-      required:
-      - amount
-      - disclaimer
-      - name
-    code:
-      type: integer
-      description: HTTP status code.
-    RebateType:
-      example: CASH
-      description: Default is `CASH`.
-      type: string
-      enum:
-      - CASH
-      - FINANCE_RATE
-      - LEASE_RATE
-    TaxableAmount:
-      type: number
-      example: 34317.99
-      format: float
-      minimum: 0
-      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" /> Taxable amount.</p>'
-    DealmakerCreditAppFinanceFeeInput:
-      type: object
-      title: Fee
-      description: Fee information.
-      required:
-      - amount
-      - code
-      - name
-      properties:
-        amount:
-          type: number
-          example: 249.99
-          format: float
-          minimum: 0
-          description: Fee amount paid by the consumer.
-        code:
-          allOf:
-          - $ref: '#/components/schemas/FeeCodeInput'
-          description: 'Indicates how the fee should be applied to the pricing stack. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
-        name:
-          type: string
-          minLength: 1
-          description: Fee name or description displayed in the AutoFi consumer experience.
-    SimulateInput:
-      type: object
-      title: Simulate
-      description: 'Request a test response from one or more lenders.
+      title: Rebate
+      description: 'Rebates applied to the credit application.
 
-        When omitted, the loan application is handled according to the default rules defined for the environment.
 
-        In uat, the AutoFi Test Environment is used and approvals are returned for all lenders.
+        This field can be used to include qualified rebates (i.e. selected by the customer). The `programId` is required to
 
-        In production, the loan application is submitted to R1/DT for `live` decisioning.
+        match these up with the correct rebate program.
 
         '
-      properties:
-        environment:
-          $ref: '#/components/schemas/SimulateEnvironment'
-        decisions:
-          title: Simulated Decision
-          description: The decisions to be simulated.
-          items:
-            $ref: '#/components/schemas/SimulatedDecision'
-    OwnedTradeInSchema:
-      description: Owned trade-in input details
-      type: object
-      title: Owned
-      required:
-      - amount
-      - make
-      - model
-      - ownership
-      - year
-      allOf:
-      - $ref: '#/components/schemas/TradeInSchema'
-      properties:
-        amount:
-          type: number
-          format: float
-          example: 5000.75
-          description: The value of the vehicle.
-        ownership:
-          type: string
-          example: OWNED
-          description: Trade-in ownership type.
-          enum:
-          - OWNED
-    DecisionMiddlemen:
-      type: string
-      enum:
-      - routeOne
-      - dealertrack
-    DealmakerCreditAppProductInput:
-      allOf:
-      - $ref: '#/components/schemas/ProductBaseInput'
-      properties:
-        name:
-          type: string
-          description: Product description.
-          example: Extended Warranty
-          minLength: 1
-        referenceId:
-          type: string
-          title: Product Reference ID
-          description: Product identifier used to reference a product within a DMS.
-          example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
-          minLength: 1
-        tax:
-          allOf:
-          - $ref: '#/components/schemas/tax'
-          description: Tax amount for the product.
-      required:
-      - category
-      - name
-      - price
-      - tax
-    DealmakerCreditAppNewVehicleInput:
-      allOf:
-      - $ref: '#/components/schemas/DealmakerCreditAppBaseVehicleInput'
-      properties:
-        age:
-          type: string
-          description: Vehicle age.
-          enum:
-          - NEW
-      required:
-      - age
-      - dealerRetailPrice
-      - invoice
-      - make
-      - model
-      - modelCode
-      - msrp
-      - trim
-      - vin
-      - year
-    FeeCode:
-      example: SHIPPING_FEE
-      description: 'Default is `OTHER`. Note: The `SHIPPING_FEE` is added to the vehicle''s sales price when submitted to the middleman.'
-      type: string
-      enum:
-      - DOC_FEE
-      - OTHER
-      - SHIPPING_FEE
-      - TIRE_FEE
-      - TITLE_REG
+      items:
+        $ref: '#/components/schemas/DealmakerCreditAppRebateInput'
     LeasePricingStack:
       type: object
       title: Lease
@@ -1395,43 +1691,24 @@ components:
           deprecated: true
           description: '`totalTaxes` has been `deprecated` for LEASE applications'
           example: 367.61
-    DownPayment:
-      type: integer
-      title: Down Payment
-      description: Amount the consumer is putting down towards the vehicle.
-      example: 3000
-      minimum: 0
-    DealmakerCreditAppFinanceFeesInput:
-      type: array
-      title: Fee
-      description: Fees associated with the credit application.
-      items:
-        $ref: '#/components/schemas/DealmakerCreditAppFinanceFeeInput'
-    PricePlan:
+    FeeName:
       type: string
-      description: This field can be used to denote a discount pricing program. Some manufacturers may allow eligible employees and their family members additional savings on the purchase of new vehicles.
-      example: X
-    TaxItem:
+      description: The name of the fee. This fee varies per application and is different from dealer fees that are constant across all applications.
+      example: Shipping fee.
+    DealerCodeOnlyInput:
       type: object
+      title: Dealer
+      description: Dealer information.
+      required:
+      - code
       properties:
-        name:
-          type:
-          - string
-          - 'null'
-        price:
-          type:
-          - number
-          - 'null'
-          format: float
-        totalTax:
-          type:
-          - number
-          - 'null'
-          format: float
-    ReferenceIdSchema:
-      allOf:
-      - $ref: '#/components/schemas/ReferenceIdBase'
-      description: Partner's unique identifier for each Dealmaker loan application.
+        code:
+          description: Identification code assigned to dealer by AutoFi.
+          type: string
+          pattern: ^[A-Z0-9]{4}$
+          minLength: 4
+          maxLength: 4
+          example: 76KR
     TradeIn:
       type: object
       properties:
@@ -1529,129 +1806,234 @@ components:
           example: 2018
           minimum: 1990
           description: Trade-in vehicle year.
-    BaseSelectedProduct:
+    price:
+      type: number
+      example: 100
+      format: float
+      minimum: 0
+      description: Pretax price.
+    TradeInConditionSchema:
+      description: Condition for the trade-in vehicle
+      type: string
+      enum:
+      - EXCELLENT
+      - FAIR
+      - GOOD
+      - POOR
+      - VERY_GOOD
+    ReferenceIdSchema:
+      allOf:
+      - $ref: '#/components/schemas/ReferenceIdBase'
+      description: Partner's unique identifier for each Dealmaker loan application.
+    TaxAmount:
+      type: number
+      example: 995.22
+      format: float
+      minimum: 0
+      description: "Total amount for this tax.  \n**Note**: For product specific taxes see `selectedProducts.tax`.  \nFor Total taxes see `pricingStack.totalTaxes`.\n"
+    TaxItemsLease:
       type: object
-      description: Fields in common for FINANCE, CASH and LEASE.
+      description: Tax items applied to estimated lease payment calculation.
       properties:
-        mileage:
+        capitalized:
           type:
-          - integer
+          - array
           - 'null'
-          example: 1
-          minimum: 0
-          description: The mileage selected by the customer for a specific product (e.g. VSC).
-        name:
+          description: Capitalized tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        dueAtSigning:
           type:
-          - string
+          - array
           - 'null'
-          description: Name of the F&I product selected.
-        price:
-          $ref: '#/components/schemas/price'
-        referenceId:
-          $ref: '#/components/schemas/referenceId'
-        tax:
-          $ref: '#/components/schemas/tax'
-        taxableAmount:
-          $ref: '#/components/schemas/TaxableAmount'
-        taxLineItems:
-          $ref: '#/components/schemas/TaxLineItems'
-        termMonths:
+          description: Tax items due at signing.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        biweekly:
           type:
-          - integer
+          - array
           - 'null'
-          example: 1
-          minimum: 0
-          description: The term selected by the customer for a specific product (e.g. Tire and Wheel).
-        total:
+          description: Bi-weekly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+        monthly:
           type:
-          - number
+          - array
           - 'null'
-          example: 1
+          description: Monthly tax items.
+          items:
+            allOf:
+            - $ref: '#/components/schemas/TaxItemLease'
+    TradeInLeaseTermsSchema:
+      description: Lease terms applied to the trade-in vehicle.
+      type: object
+      properties:
+        annualMiles:
+          type: integer
+          example: 15000
+          description: Miles a leased vehicle can be driven annually before the penalty is triggered.
+          exclusiveMinimum: 0
+        monthlyPayment:
+          type: number
           format: float
+          example: 350.45
+          description: Monthly payment for leased vehicle.
+          exclusiveMinimum: 0
+        numRemainingPayments:
+          type: integer
+          example: 6
           minimum: 0
-          description: The total price of the product including the finance charge.
-      example:
-        mileage: 50000
-        name: Extended Warranty
-        price: 700
-        referenceId: 23b605f6-2a9e-11ec-8d3d-0242ac130003
-        tax: 60.01
-        taxableAmount: 700
-        taxLineItems:
-        - jurisdiction:
-            name: COLORADO
-            type: STATE
-            imposition: General Sales and Use Tax
-          tax:
-            rate: 0.086
-            amount: 60.1
-        termMonths: 60
-        total: 760.01
-    CreateDealmakerCreditAppInput:
+          description: Number of payments remaining on the lease.
+        penaltyPerExcessMile:
+          type: number
+          format: float
+          example: 0.25
+          minimum: 0
+          description: Penalty per excess mile driven above the `annualMiles` allowed by the lease.
+        term:
+          type: integer
+          example: 24
+          description: Length of lease term in months.
+          exclusiveMinimum: 0
+    CreateDealmakerInput:
       type: object
       required:
       - applicant
       - dealer
-      - offerPreferences
       - referenceId
       - vehicle
       properties:
         applicant:
-          $ref: '#/components/schemas/DealmakerCreditAppApplicantInput'
-        callbackUrl:
-          type: string
-          example: https://my-domain.com/customers/1/updateCreditApp
-          format: uri
-          minLength: 1
-          description: A valid URL to receive responses when there is a change in state.
+          type: object
+          required:
+          - email
+          - name
+          properties:
+            email:
+              allOf:
+              - $ref: '#/components/schemas/EmailInput'
+            name:
+              allOf:
+              - $ref: '#/components/schemas/ApplicantBaseNameInput'
+            phone:
+              allOf:
+              - $ref: '#/components/schemas/PhoneInput'
         dealer:
-          $ref: '#/components/schemas/DealerCodeOnlyInput'
-        fees:
-          $ref: '#/components/schemas/DealmakerCreditAppFinanceFeesInput'
-        offerPreferences:
-          $ref: '#/components/schemas/DealmakerCreditAppOfferPreferencesInput'
-        products:
-          $ref: '#/components/schemas/DealmakerCreditAppProductsInput'
-        rebates:
-          $ref: '#/components/schemas/DealmakerCreditAppRebatesInput'
-        nonOemRebates:
-          $ref: '#/components/schemas/DealmakerCreditAppNonOemRebatesInput'
+          allOf:
+          - $ref: '#/components/schemas/DealerCodeOnlyInput'
+          - properties:
+              channel:
+                description: The dealer channel associated with the new loan application.
+                type: string
+                minLength: 1
         referenceId:
-          $ref: '#/components/schemas/DealmakerCreditAppReferenceIdInput'
-        simulate:
-          $ref: '#/components/schemas/SimulateInput'
-        tax:
-          $ref: '#/components/schemas/DealmakerCreditAppTaxInput'
-        tradeIn:
-          $ref: '#/components/schemas/TradeInInputSchema'
+          allOf:
+          - $ref: '#/components/schemas/ReferenceIdInput'
         vehicle:
-          $ref: '#/components/schemas/DealmakerCreditAppVehicleInput'
-    ProductBaseInput:
-      type: object
-      title: Product
-      description: Product information.
-      properties:
-        category:
-          $ref: '#/components/schemas/ProductCategory'
-        name:
-          type: string
-          description: Product description.
-          example: Extended Warranty
-        price:
-          $ref: '#/components/schemas/price'
-        termMiles:
-          type: integer
-          description: Product mileage limit.
-          example: 100000
-        termMonths:
-          type: integer
-          description: Product duration.
-          example: 60
-    VinBaseSchema:
+          allOf:
+          - $ref: '#/components/schemas/VehicleVinOnlyInput'
+          - properties:
+              photoUrl:
+                type: string
+                format: url
+                example: https://example.com/my/vehicle/photo.jpg
+                description: A valid URL for displaying a photo of the vehicle within the consumer experience and the AutoFi Dealer Portal. When not provided, the photo from the dealer's inventory is used instead.
+    PhoneInput:
       type: string
-      maxLength: 17
-      minLength: 17
-      pattern: ^[a-zA-Z0-9]{17}$
+      example: '5554443333'
+      maxLength: 10
+      minLength: 10
+      pattern: ^[2-9][0-9]{9}$
+      description: A valid 10 digit phone number.
+    DealmakerCreditAppNonOemRebateInput:
+      allOf:
+      - $ref: '#/components/schemas/NonOemRebateInput'
+      properties:
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
+          example: Rebate Disclaimer
+          minLength: 1
+      required:
+      - amount
+      - disclaimer
+      - name
+    DealmakerCreditAppRebateInput:
+      allOf:
+      - $ref: '#/components/schemas/RebateBaseInput'
+      properties:
+        disclaimer:
+          type: string
+          description: Disclaimer for the rebate. Displayed as a tooltip next to each rebate line item.
+          example: Rebate Disclaimer
+          minLength: 1
+        programId:
+          type: string
+          description: Unique identifier for the rebate program. OEM rebates will require this field.
+          example: VA_1234
+          minLength: 1
+      required:
+      - amount
+      - disclaimer
+      - name
+      - programId
+    TaxLineItems:
+      type: array
+      description: '<p style="display: flex; flex-direction: column"><img src="http://badges.github.io/stability-badges/dist/experimental.svg" alt="Experimental" style="width: 100%; max-width: 150px" />The breakdown of the tax amount by jurisdiction. Each tax line item contains the tax rate and corresponding amount for each jurisdiction or tax authority.</p>'
+      items:
+        properties:
+          jurisdiction:
+            type: object
+            description: The jurisdiction responsible for the tax line item.
+            properties:
+              type:
+                type: string
+                example: STATE
+                description: Type of jurisdiction.
+                enum:
+                - STATE
+                - CITY
+                - COUNTY
+                - DISTRICT
+              name:
+                type: string
+                example: COLORADO
+                description: Name of the jurisdiction.
+              imposition:
+                type: string
+                example: General Sales and Use Tax
+                description: Name of the tax imposition.
+          tax:
+            type: object
+            description: Tax rate and amount calculated for the jurisdiction.
+            properties:
+              rate:
+                type: number
+                format: float
+                minimum: 0
+                maximum: 1
+                example: 0.029
+                description: Tax rate.
+              amount:
+                type: number
+                format: float
+                minimum: 0
+                example: 995.22
+                description: Tax amount.
+    DealmakerCreditAppTaxInput:
+      type: object
+      title: Tax
+      description: Tax information provided by the partner. If not provided, AutoFi's tax engine will be used for tax calculations.
+      required:
+      - total
+      properties:
+        total:
+          allOf:
+          - $ref: '#/components/schemas/schemas-tax'
+          title: Total Tax
     DealmakerCreditApp:
       type: object
       description: Dealmaker credit application information.
@@ -1682,466 +2064,55 @@ components:
       - loanApplicationId
       - referenceId
       - url
-    message:
-      type: string
-      description: HTTP status description.
-    ReferenceIdBase:
-      type: string
-      title: Reference ID
-      minLength: 1
-      example: my-reference-id
-    TaxAmount:
+    SimulateInput:
+      type: object
+      title: Simulate
+      description: 'Request a test response from one or more lenders.
+
+        When omitted, the loan application is handled according to the default rules defined for the environment.
+
+        In uat, the AutoFi Test Environment is used and approvals are returned for all lenders.
+
+        In production, the loan application is submitted to R1/DT for `live` decisioning.
+
+        '
+      properties:
+        environment:
+          $ref: '#/components/schemas/SimulateEnvironment'
+        decisions:
+          title: Simulated Decision
+          description: The decisions to be simulated.
+          items:
+            $ref: '#/components/schemas/SimulatedDecision'
+    schemas-tax:
       type: number
-      example: 995.22
+      example: 1745.25
       format: float
       minimum: 0
-      description: "Total amount for this tax.  \n**Note**: For product specific taxes see `selectedProducts.tax`.  \nFor Total taxes see `pricingStack.totalTaxes`.\n"
-    IncentiveOption:
-      type: string
-      title: Incentive Option
-      description: The type of incentive the consumer is looking for.
-      default: LOWEST_MONTHLY
-      enum:
-      - LARGEST_REBATE
-      - LOWEST_APR
-      - LOWEST_MONTHLY
-    TaxItemLease:
-      type: object
-      description: Lease Tax Item.
-      properties:
-        amount:
-          description: Tax item amount.
-          type: number
-          format: float
-        description:
-          description: Tax item description.
-          type: string
-        descriptionI18n:
-          description: Tax item description for locale.
-          type: string
+      description: The total taxes to be applied (should not include F&I Product taxes).
+    referenceId:
+      type:
+      - string
+      - 'null'
+      title: Product Reference ID
+      example: 23b605f6-2a9e-11ec-8d3d-0242ac130003
+      description: Product identifier used to reference a product within a DMS.
+    DealmakerExistsError:
+      allOf:
+      - $ref: '#/components/schemas/Dealmaker'
+      - $ref: '#/components/schemas/DealmakerExistsErrorProperties'
     FeeAmount:
       type: number
       example: 249.99
       format: float
       minimum: 0
-    LoanApplicationData:
-      type: object
-      properties:
-        afExperienceCompleted:
-          type:
-          - boolean
-          - 'null'
-          description: This flag is `true` when a customer has completed the last step in the AutoFi experience.
-        appliedFees:
-          description: Fees applied to the loan application
-          anyOf:
-          - $ref: '#/components/schemas/schemas-FinanceFees'
-          - $ref: '#/components/schemas/LeaseFees'
-        appliedTaxes:
-          description: Taxes applied to the loan application
-          anyOf:
-          - $ref: '#/components/schemas/FinanceTaxes'
-          - $ref: '#/components/schemas/LeaseTaxes'
-        creditScore:
-          type: integer
-          minimum: 300
-          maximum: 999
-          description: Credit score. Number between 300 and 999.
-        decisions:
-          type:
-          - array
-          - 'null'
-          items:
-            allOf:
-            - $ref: '#/components/schemas/Decision'
-        loanApplicationId:
-          type: string
-        offerAvailable:
-          type:
-          - boolean
-          - 'null'
-          description: This flag is `true` if an offer is available to be displayed to a consumer.
-        offerPreferences:
-          type: object
-          properties:
-            annualMileage:
-              type:
-              - integer
-              - 'null'
-              example: 1
-              minimum: 1
-              description: Miles the consumer would prefer when leasing a vehicle
-            apr:
-              type: number
-              format: float
-              description: Annual percentage rate in decimals
-            downPayment:
-              type: integer
-              example: 1
-              minimum: 0
-              description: Amount the consumer is putting down towards the vehicle
-            incentiveOption:
-              allOf:
-              - $ref: '#/components/schemas/IncentiveOption'
-              description: 'Default: `LOWEST_MONTHLY`'
-            isSubvented:
-              type: boolean
-              description: Indicates that the rate in this offer contains a subvented or special rate. This influences rules relating to markup and rebate compatibility.
-            requestedOfferType:
-              allOf:
-              - $ref: '#/components/schemas/CreditOfferType'
-              description: How the customer is financing the vehicle - "FINANCE" or "LEASE".
-            term:
-              type: integer
-              example: 1
-              minimum: 1
-              description: Length of term in months
-        pricingStack:
-          description: Pricing information for a loan application. Only available after the state is `ACCEPTED`.
-          oneOf:
-          - $ref: '#/components/schemas/FinancePricingStack'
-          - $ref: '#/components/schemas/LeasePricingStack'
-        referenceId:
-          type:
-          - string
-          - 'null'
-          description: Partner's unique identifier for each credit application. Same `referenceId` as was provided to AutoFi.
-        selectedProducts:
-          type: array
-          description: Selected products.
-          items:
-            allOf:
-            - $ref: '#/components/schemas/BaseSelectedProduct'
-            type: object
-            properties:
-              monthlyPayment:
-                type:
-                - number
-                - 'null'
-                example: 1
-                format: float
-                minimum: 0
-                description: Monthly payment over the finance term including the finance charge.
-        state:
-          description: '<p>The current state of the loan application within the decisioning flow. The various states are detailed in the state diagram below.</p>
-
-            <img src="/diagrams/loanApplicationStates-API.mmd.svg" alt="Loan Application State Diagram" style="width: 100%; max-width: 600px" />
-
-            '
-          type:
-          - string
-          - 'null'
-          enum:
-          - ACCEPTED
-          - APPROVED
-          - BEGAN_APPLICATION
-          - DECLINED
-          - ERROR
-          - FI_COMPLETED
-          - PENDING
-          - SUBMITTED
-        tradeIn:
-          description: Trade in information.
-          type: object
-          allOf:
-          - $ref: '#/components/schemas/TradeIn'
-    DealmakerCreditAppOfferPreferencesInput:
-      type: object
-      title: Offer Preferences
-      description: Offer Preferences for retail finance.
-      required:
-      - downPayment
-      - term
-      properties:
-        apr:
-          allOf:
-          - $ref: '#/components/schemas/Apr'
-          minimum: 0
-        downPayment:
-          $ref: '#/components/schemas/DownPayment'
-        incentiveOption:
-          $ref: '#/components/schemas/IncentiveOption'
-        isSubvented:
-          $ref: '#/components/schemas/IsSubvented'
-        term:
-          $ref: '#/components/schemas/Term'
-        pricePlan:
-          $ref: '#/components/schemas/PricePlan'
-    Apr:
+    tax:
       type: number
+      example: 15.5
       format: float
-      example: 0.02
-      description: Annual percentage rate in decimals e.g. if the apr is 2% this should be 0.02
-    VehicleVinOnlyInput:
-      type: object
-      title: VIN Only
-      description: Vehicle Information.
-      required:
-      - vin
-      properties:
-        vin:
-          allOf:
-          - $ref: '#/components/schemas/VinBaseSchema'
-          - example: 1FATP8FFXJ5139341
-            description: Vehicle Identification Number. Must be 17 alphanumeric characters. The vehicle must exist in the dealer's inventory.
-    FinancePricingStack:
-      title: Finance
-      type: object
-      description: This fields are only applicable to `FINANCE`.
-      allOf:
-      - $ref: '#/components/schemas/BasePricingStack'
-      properties:
-        downPayment:
-          type:
-          - integer
-          - 'null'
-          description: Amount the consumer is putting down towards the vehicle.
-          example: 3500.01
-        financeCharge:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Finance charge calculated based on the `amountFinanced`, `apr` and `termMonths`.
-          example: 345.01
-        taxItems:
-          type: array
-          description: Tax items have now been `deprecated` in favor of the standardized `appliedTaxes` field.
-          items:
-            type: object
-            allOf:
-            - $ref: '#/components/schemas/TaxItem'
-          deprecated: true
-          example:
-            name: Municipal Tax
-            price: 87.99
-            totalTax: 87.99
-        amountFinanced:
-          description: Total amount financed for the vehicle.
-          example: 2269.57
-        monthlyPayment:
-          description: Total monthly payment.
-        offerType:
-          description: Type of offer.
-        termMonths:
-          description: Duration of the `FINANCE` contract in months.
-          example: 48
-        totalTaxes:
-          description: "Total amount of all vehicle and products taxes.  \n**Notes:** For vehicle specific taxes see `appliedTaxes.amount`.  \nFor product specific taxes see `selectedProducts.tax`.\n"
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 6513.67
-        totalFees:
-          description: Total amount of all fees.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 250
-    SimulatedDecision:
-      title: Simulated Decision
-      properties:
-        decision:
-          $ref: '#/components/schemas/SimulatedDecisionState'
-        delay:
-          type: integer
-          example: 75000
-          description: Specify how long it should take for this simulated decision to return in milliseconds.
-        lender:
-          type: string
-          example: CHASE
-          description: "The lender that decision should be simulated for.\nThese are the lender codes available to use:\n  - ALLY \n  - BOFA \n  - CHASE \n  - EXETER \n  - FIFS  \n  - FMCC \n  - GLS \n  - GMFL \n  - HBAN \n  - LAFSNC \n  - RBC \n  - SANT \n  - SCF \n  - SETF \n  - TRICOR \n  - VROOM \n  - WEST\n"
-        middleman:
-          allOf:
-          - $ref: '#/components/schemas/DecisionMiddlemen'
-          description: The middleman that the decision should be simulated from.
-      required:
-      - decision
-      - lender
-    PartialBasePricingStack:
-      type: object
-      description: Fields in common for FINANCE and LEASE.
-      properties:
-        amountFinanced:
-          type:
-          - number
-          - 'null'
-          format: float
-        apr:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Annual percentage rate.
-          example: 0.02
-        buyRate:
-          description: Dealer financing rate.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 0.0275
-        monthlyPayment:
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 335.34
-        numberOfPayments:
-          type:
-          - integer
-          - 'null'
-          minimum: 0
-          description: Number of payments to make.
-          example: 35
-        termMonths:
-          type:
-          - integer
-          - 'null'
-          description: Duration of the contract in months.
-        totalRebates:
-          type:
-          - integer
-          - 'null'
-          description: Total rebate amount.
-          example: 2499.99
-        totalOfPayments:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Total paid for all payments.
-          example: 13736.9
-        totalProducts:
-          description: Total amount of all products including taxes.
-          type:
-          - number
-          - 'null'
-          format: float
-          example: 115.5
-    LeaseFees:
-      type: array
-      title: Lease
-      items:
-        properties:
-          amount:
-            $ref: '#/components/schemas/FeeAmount'
-          code:
-            $ref: '#/components/schemas/FeeCode'
-          feePlacement:
-            $ref: '#/components/schemas/FeePlacement'
-          name:
-            $ref: '#/components/schemas/FeeName'
-    EmailInput:
-      type: string
-      example: fake@example.com
-      format: email
-      minLength: 1
-      title: Email
-      description: 'An email is an ASCII string separated into two parts by the @ symbol (local_part@domain). The local_part may contain uppercase (A-Z) and lowercase (a-z) ASCII characters, digits (0-9), special characters (+, -, _, !, #, $, %, &, , *, /, =, ?, ^, `, {, |, }, ~) and the . character. The domain part of an email may contain letters, digits, hyphens and periods. The top level domain (TLD) portion of the domain must also be published by IANA to be considered valid. See https://tools.ietf.org/html/rfc2822#section-3.4.1 for more information.'
-    TradeInConditionSchema:
-      description: Condition for the trade-in vehicle
-      type: string
-      enum:
-      - EXCELLENT
-      - FAIR
-      - GOOD
-      - POOR
-      - VERY_GOOD
-    PricingStackRebateOutput:
-      type: object
-      title: Rebate
-      properties:
-        amount:
-          type: number
-          format: float
-          example: 2499.99
-        disclaimer:
-          type: string
-          description: Disclaimer for the rebate.
-          example: Veterans only Rebate
-        expiryDate:
-          type:
-          - string
-          - 'null'
-          format: date
-          description: Rebate expiry date.
-          example: 12-01-2024
-        isDiscount:
-          type: boolean
-          default: false
-          description: When `true` the `amount` is included in `discounts` instead of as a rebate line item. This can also affect the tax calculation.
-          example: true
-        isPrivateOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is a private offer for the applicant.
-          example: false
-        isQualifiedOffer:
-          type: boolean
-          default: false
-          description: Indicates that the rebate is only available under certain conditions. For example special rebates for students or military.
-          example: true
-        name:
-          type: string
-          description: Description of the rebate to be shown to the customer.
-          example: VA Rebate
-        programId:
-          type: string
-          description: Unique identifier for the rebate program.
-          example: VA_1234
-        type:
-          $ref: '#/components/schemas/RebateType'
-    DealerCodeOnlyInput:
-      type: object
-      title: Dealer
-      description: Dealer information.
-      required:
-      - code
-      properties:
-        code:
-          description: Identification code assigned to dealer by AutoFi.
-          type: string
-          pattern: ^[A-Z0-9]{4}$
-          minLength: 4
-          maxLength: 4
-          example: 76KR
-    ReferenceIdInput:
-      allOf:
-      - $ref: '#/components/schemas/ReferenceIdBase'
-      description: Partner's unique identifier for each Dealmaker loan application. An error is returned when a loan application previously created for the given `referenceId` is found.
+      minimum: 0
+      description: "Tax amount for the product. Defaults to 0.  \n**Notes:** Does not include vehicle taxes.  \n  For vehicle specific taxes see `appliedTaxes.amount`.  \n  For Total taxes see `pricingStack.totalTaxes`.\n"
   responses:
-    CreateDealmaker409Response:
-      description: Dealmaker Exists
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DealmakerExistsError'
-          example:
-          - code: 409
-            message: 'Dealmaker already exists for referenceId: my-reference-id'
-            referenceId: my-reference-id
-            url: https://example.com
-    CreateDealmakerResponse:
-      description: Dealmaker loan application created successfully.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Dealmaker'
-    CreateDealmakerCreditApp409Response:
-      description: Dealmaker Credit Application Exists
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DealmakerCreditAppExistsError'
-    CreateDealmakerCreditAppResponse:
-      description: Dealmaker credit application created successfully.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/DealmakerCreditApp'
     CreateDealmakerCreditApp400Response:
       description: Bad Request
       content:
@@ -2159,6 +2130,29 @@ components:
             - description: Field "dealer.code" can not be null.
             - description: 'Dealer not found using code: AAAAA'
             - description: 'Vehicle not found using dealer code: ABCD and vin: MAJ6S3JL9MC396799'
+    CreateDealmakerCreditAppResponse:
+      description: Dealmaker credit application created successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DealmakerCreditApp'
+    CreateDealmakerCreditApp409Response:
+      description: Dealmaker Credit Application Exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DealmakerCreditAppExistsError'
+    CreateDealmaker409Response:
+      description: Dealmaker Exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DealmakerExistsError'
+          example:
+          - code: 409
+            message: 'Dealmaker already exists for referenceId: my-reference-id'
+            referenceId: my-reference-id
+            url: https://example.com
     CreateDealmaker400Response:
       description: Bad Request
       content:
@@ -2176,19 +2170,25 @@ components:
             - description: Field "dealer.code" can not be null.
             - description: 'Dealer not found using code: AAAAA'
             - description: 'Vehicle not found using dealer code: ABCD and vin: MAJ6S3JL9MC396799'
-  requestBodies:
-    CreateDealmakerBody:
-      required: true
+    CreateDealmakerResponse:
+      description: Dealmaker loan application created successfully.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/CreateDealmakerInput'
+            $ref: '#/components/schemas/Dealmaker'
+  requestBodies:
     CreateDealmakerCreditAppBody:
       required: true
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/CreateDealmakerCreditAppInput'
+    CreateDealmakerBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateDealmakerInput'
   securitySchemes:
     bearerAuth:
       description: 'Get access to data while protecting your account credentials.
